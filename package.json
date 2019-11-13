@@ -1,0 +1,41 @@
+{
+  "name": "timeline",
+  "version": "0.0.2",
+  "description": "Visualisation for observing encounters by time",
+  "author": "NEL",
+  "keywords": [
+    "d3",
+    "TypeScript"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/NELCSU/Timeline",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NELCSU/Timeline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NELCSU/Timeline/issues"
+  },
+  "scripts": {
+    "build": "rollup -cw",
+    "https": "http-server ./docs -a localhost -p 5000 -o",
+    "http": "http-server ./docs -a localhost -p 5000 -o --ssl --key private/key.pem --cert private/cert.pem",
+    "test": "npm run https",
+    "test.compile": "jest --config jestconfig.json"
+  },
+  "dependencies": {
+    "d3-array": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/d3": "^5.7.2",
+    "@types/jest": "^24.0.23",
+    "jest": "^24.9.0",
+    "rollup": "^1.27.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-typescript2": "^0.25.2",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.7.2"
+  },
+  "main": "rollup.config.js"
+}
