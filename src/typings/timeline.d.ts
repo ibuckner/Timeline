@@ -12,16 +12,14 @@ export type TCategory = {
   avgWidth?: number,
   backColor: string,
   el?: HTMLElement,
+  end: number,
   foreColor: string,
   maxWait?: number,
-  median?: number,
   name: string,
   parent?: TSequence,
   points: TPoint[],
-  q25?: number,
-  q50?: number,
-  q75?: number,
-  std?: number
+  start: number,
+  stat?: TStat
 }
 
 export type TSequence = {
@@ -32,4 +30,12 @@ export type TSequence = {
   id: number,
   relHeight?: number,
   start: number
+}
+
+export type TStat = {
+  median?: number,
+  q25?: number,
+  q50?: number,
+  q75?: number,
+  std?: number
 }

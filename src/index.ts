@@ -1,466 +1,14 @@
 import { TSequence, TCategory, TPoint } from "./typings/timeline";
 import { ascending, deviation, median, quantile } from "d3-array";
+import { DataGenerator } from "./data";
 
-const data: TSequence[] = [
-  {
-    id: 1,
-    start: 1000,
-    end: 1400,
-    categories: [
-      {
-        name: "Late Arrival (LAT)",
-        foreColor: "rgb(248, 80, 108)",
-        backColor: "rgb(248, 156, 171, 0.75)",
-        points: [
-          { id: 1, time: 1000, wait: 6 },
-          { id: 2, time: 1100, wait: 55 },
-          { id: 3, time: 1200, wait: 1 },
-          { id: 4, time: 1300, wait: 3 },
-          { id: 5, time: 1400, wait: 7 },
-          { id: 6, time: 1130, wait: 3 },
-          { id: 7, time: 1230, wait: 13 },
-          { id: 8, time: 1030, wait: 10 },
-          { id: 9, time: 1045, wait: 9 }
-        ]
-      },
-      {
-        name: "Cancelled (CAN)",
-        foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 3 },
-          { id: 3, time: 1220, wait: 11 }
-        ]
-      },
-      {
-        name: "Waiting Height & Weight (WHW)",
-        foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 9 },
-          { id: 3, time: 1220, wait: 10 }
-        ]
-      },
-      {
-        name: "In consultation (ICO)",
-        foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 20 },
-          { id: 2, time: 1210, wait: 7 },
-          { id: 3, time: 1220, wait: 3 }
-        ]
-      },
-      {
-        name: "In blood room (IBR)",
-        foreColor: "rgb(247, 65, 44)",
-        backColor: "rgba(250, 128, 114, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 3 },
-          { id: 2, time: 1210, wait: 4 },
-          { id: 3, time: 1220, wait: 5 }
-        ]
-      },
-      {
-        name: "Did not attend (DNA)",
-        foreColor: "rgb(143, 63, 248)",
-        backColor: "rgba(139, 107, 180, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 12 },
-          { id: 2, time: 1210, wait: 13 },
-          { id: 3, time: 1220, wait: 12 }
-        ]
-      },
-      {
-        name: "Identified by kiosk (KIO)",
-        foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 6 },
-          { id: 3, time: 1220, wait: 4 }
-        ]
-      },
-      {
-        name: "Waiting for consulation (WCO)",
-        foreColor: "rgb(224, 148, 5)",
-        backColor: "rgba(245, 181, 61, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 2 },
-          { id: 3, time: 1220, wait: 13 }
-        ]
-      },
-      {
-        name: "Waiting for blood (WB)",
-        foreColor: "rgb(20, 105, 105)",
-        backColor: "rgba(20, 105, 105, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 22 },
-          { id: 2, time: 1210, wait: 13 },
-          { id: 3, time: 1220, wait: 35 }
-        ]
-      },
-      {
-        name: "Completed (COM)",
-        foreColor: "rgb(116, 170, 7)",
-        backColor: "rgba(154, 205, 50, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 11 },
-          { id: 2, time: 1210, wait: 15 },
-          { id: 3, time: 1220, wait: 18 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 2,
-    start: 800,
-    end: 2000,
-    categories: [
-      {
-        name: "Cancelled (CAN)",
-        foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 3 },
-          { id: 3, time: 1220, wait: 11 }
-        ]
-      },
-      {
-        name: "In consultation (ICO)",
-        foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 20 },
-          { id: 2, time: 1210, wait: 7 },
-          { id: 3, time: 1220, wait: 3 }
-        ]
-      },
-      {
-        name: "Identified by kiosk (KIO)",
-        foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 6 },
-          { id: 3, time: 1220, wait: 4 }
-        ]
-      },
-      {
-        name: "Waiting for consulation (WCO)",
-        foreColor: "rgb(224, 148, 5)",
-        backColor: "rgba(245, 181, 61, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 2 },
-          { id: 3, time: 1220, wait: 13 }
-        ]
-      },
-      {
-        name: "Completed (COM)",
-        foreColor: "rgb(116, 170, 7)",
-        backColor: "rgba(154, 205, 50, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 11 },
-          { id: 2, time: 1210, wait: 15 },
-          { id: 3, time: 1220, wait: 18 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 3,
-    start: 900,
-    end: 1700,
-    categories: [
-      {
-        name: "Cancelled (CAN)",
-        foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 3 },
-          { id: 3, time: 1220, wait: 11 }
-        ]
-      },
-      {
-        name: "Waiting Height & Weight (WHW)",
-        foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 9 },
-          { id: 3, time: 1220, wait: 10 }
-        ]
-      },
-      {
-        name: "Identified by kiosk (KIO)",
-        foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 6 },
-          { id: 3, time: 1220, wait: 4 }
-        ]
-      },
-      {
-        name: "Completed (COM)",
-        foreColor: "rgb(116, 170, 7)",
-        backColor: "rgba(154, 205, 50, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 11 },
-          { id: 2, time: 1210, wait: 15 },
-          { id: 3, time: 1220, wait: 18 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 4,
-    start: 1000,
-    end: 1600,
-    categories: [
-      {
-        name: "Late Arrival (LAT)",
-        foreColor: "rgb(248, 80, 108)",
-        backColor: "rgb(248, 156, 171, 0.75)",
-        points: [
-          { id: 3, time: 1000, wait: 2 },
-          { id: 4, time: 1100, wait: 3 },
-          { id: 5, time: 1200, wait: 4 },
-          { id: 6, time: 1300, wait: 5 },
-          { id: 7, time: 1400, wait: 6 },
-          { id: 8, time: 1500, wait: 5 },
-          { id: 9, time: 1600, wait: 2 }
-        ]
-      },
-      {
-        name: "Waiting Height & Weight (WHW)",
-        foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 9 },
-          { id: 3, time: 1220, wait: 10 }
-        ]
-      },
-      {
-        name: "In consultation (ICO)",
-        foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 20 },
-          { id: 2, time: 1210, wait: 7 },
-          { id: 3, time: 1220, wait: 3 }
-        ]
-      },
-      {
-        name: "In blood room (IBR)",
-        foreColor: "rgb(247, 65, 44)",
-        backColor: "rgba(250, 128, 114, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 3 },
-          { id: 2, time: 1210, wait: 4 },
-          { id: 3, time: 1220, wait: 5 }
-        ]
-      },
-      {
-        name: "Waiting for consulation (WCO)",
-        foreColor: "rgb(224, 148, 5)",
-        backColor: "rgba(245, 181, 61, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 2 },
-          { id: 3, time: 1220, wait: 13 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 5,
-    start: 1400,
-    end: 1500,
-    categories: [
-      {
-        name: "Late Arrival (LAT)",
-        foreColor: "rgb(248, 80, 108)",
-        backColor: "rgb(248, 156, 171, 0.75)",
-        points: [
-          { id: 7, time: 1400, wait: 6 },
-          { id: 8, time: 1500, wait: 5 }
-        ]
-      },
-      {
-        name: "Cancelled (CAN)",
-        foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 8 },
-          { id: 2, time: 1410, wait: 3 },
-          { id: 3, time: 1420, wait: 11 }
-        ]
-      },
-      {
-        name: "Waiting Height & Weight (WHW)",
-        foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 1 },
-          { id: 2, time: 1410, wait: 9 },
-          { id: 3, time: 1420, wait: 10 }
-        ]
-      },
-      {
-        name: "In consultation (ICO)",
-        foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 20 },
-          { id: 2, time: 1410, wait: 7 },
-          { id: 3, time: 1420, wait: 3 }
-        ]
-      },
-      {
-        name: "In blood room (IBR)",
-        foreColor: "rgb(247, 65, 44)",
-        backColor: "rgba(250, 128, 114, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 3 },
-          { id: 2, time: 1410, wait: 4 },
-          { id: 3, time: 1420, wait: 5 }
-        ]
-      },
-      {
-        name: "Did not attend (DNA)",
-        foreColor: "rgb(143, 63, 248)",
-        backColor: "rgba(139, 107, 180, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 12 },
-          { id: 2, time: 1410, wait: 13 },
-          { id: 3, time: 1420, wait: 12 }
-        ]
-      },
-      {
-        name: "Identified by kiosk (KIO)",
-        foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [
-          { id: 1, time: 1400, wait: 8 },
-          { id: 2, time: 1410, wait: 6 },
-          { id: 3, time: 1420, wait: 4 }
-        ]
-      }
-    ]
-  },
-  {
-    id: 6,
-    start: 900,
-    end: 1800,
-    categories: [
-      {
-        name: "Late Arrival (LAT)",
-        foreColor: "rgb(248, 80, 108)",
-        backColor: "rgb(248, 156, 171, 0.75)",
-        points: [
-          { id: 1, time: 800, wait: 0 },
-          { id: 2, time: 900, wait: 1 },
-          { id: 3, time: 1000, wait: 2 },
-          { id: 4, time: 1100, wait: 3 },
-          { id: 5, time: 1200, wait: 4 },
-          { id: 6, time: 1300, wait: 5 },
-          { id: 7, time: 1400, wait: 6 },
-          { id: 8, time: 1500, wait: 5 },
-          { id: 9, time: 1600, wait: 2 },
-          { id: 10, time: 1700, wait: 0 }
-        ]
-      },
-      {
-        name: "Cancelled (CAN)",
-        foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 3 },
-          { id: 3, time: 1220, wait: 11 }
-        ]
-      },
-      {
-        name: "Waiting Height & Weight (WHW)",
-        foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 9 },
-          { id: 3, time: 1220, wait: 10 }
-        ]
-      },
-      {
-        name: "In consultation (ICO)",
-        foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 20 },
-          { id: 2, time: 1210, wait: 7 },
-          { id: 3, time: 1220, wait: 3 }
-        ]
-      },
-      {
-        name: "In blood room (IBR)",
-        foreColor: "rgb(247, 65, 44)",
-        backColor: "rgba(250, 128, 114, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 3 },
-          { id: 2, time: 1210, wait: 4 },
-          { id: 3, time: 1220, wait: 5 }
-        ]
-      },
-      {
-        name: "Did not attend (DNA)",
-        foreColor: "rgb(143, 63, 248)",
-        backColor: "rgba(139, 107, 180, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 12 },
-          { id: 2, time: 1210, wait: 13 },
-          { id: 3, time: 1220, wait: 12 }
-        ]
-      },
-      {
-        name: "Identified by kiosk (KIO)",
-        foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 8 },
-          { id: 2, time: 1210, wait: 6 },
-          { id: 3, time: 1220, wait: 4 }
-        ]
-      },
-      {
-        name: "Waiting for consulation (WCO)",
-        foreColor: "rgb(224, 148, 5)",
-        backColor: "rgba(245, 181, 61, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 1 },
-          { id: 2, time: 1210, wait: 2 },
-          { id: 3, time: 1220, wait: 13 }
-        ]
-      },
-      {
-        name: "Waiting for blood (WB)",
-        foreColor: "rgb(20, 105, 105)",
-        backColor: "rgba(20, 105, 105, 0.75)",
-        points: [
-          { id: 1, time: 1200, wait: 22 },
-          { id: 2, time: 1210, wait: 13 },
-          { id: 3, time: 1220, wait: 35 }
-        ]
-      }
-    ]
-  }
-];
+const generator = new DataGenerator(1);
+const data: TSequence[] = [];
+data.push(generator.addRandomSequence());
+data.push(generator.addRandomSequence());
+data.push(generator.addRandomSequence());
+data.push(generator.addRandomSequence());
+data.push(generator.addRandomSequence());
 
 let activePoint: TPoint | undefined; // which point is currently highlighted?
 let activeEvent: any;
@@ -468,7 +16,8 @@ const objExplorer = document.querySelector(".object");
 const timeline = document.querySelector(".timeline");
 const legend = document.querySelector(".legend");
 const legendItems = document.querySelector(".legend-items");
-const viewLegendButton = document.querySelector(".show-legend");
+const btnViewLegend = document.getElementById("btnShowLegend");
+const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
 const closeLegendButton = document.querySelector(".close-legend");
 let resizeTimer: any;
 
@@ -506,10 +55,10 @@ function timelineclickHandler(_: Event): void {
 function toggleLegendClickHandler(): void {
   if (legend?.classList.contains("hidden")) {
     legend.classList.remove("hidden");
-    viewLegendButton?.classList.add("hidden");
+    btnViewLegend?.classList.add("hidden");
   } else {
     legend?.classList.add("hidden");
-    viewLegendButton?.classList.remove("hidden");
+    btnViewLegend?.classList.remove("hidden");
   }
 }
 
@@ -523,26 +72,48 @@ function togglePointSelection(point?: TPoint): void {
   }
 }
 
-function toggleObjectExplorer(point?: TPoint): void {
+function toggleObjectExplorer(feature?: any): void {
   if (objExplorer) {
-    if (point) {
+    if (feature) {
       objExplorer.classList.remove("hidden");
       const heading = objExplorer?.querySelector("h3");
-      const category: TCategory | undefined = point.parent;
-      if (category) {
+      if (feature.points) { // category clicked
         if (heading) {
-          heading.textContent = `point appointment for "${category.name}"`;
+          heading.textContent = `${feature.name}`;
         }
         const content = objExplorer.querySelector(".content");
-        if (content && category.parent) {
-          content.innerHTML = `<div>The opening times are ${numberToTime(category.parent?.start)} to ${numberToTime(category.parent?.end)}</div>`;
-          content.innerHTML += `<div>The appointment was scheduled at ${numberToTime(point.time)} and the point waited approx. ${point.wait} minute${point.wait > 1 ? "s" : ""}.</div>`;
+        if (content && feature.parent) {
+          content.innerHTML = `<div>The opening times are ${numberToTime(feature.parent?.start)} to ${numberToTime(feature.parent?.end)}</div>`;
         }
-      }
+      } else { // point clicked
+        const category: TCategory | undefined = feature.parent;
+        if (category) {
+          if (heading) {
+            heading.textContent = `Appointment for ${category.name}`;
+          }
+          const content = objExplorer.querySelector(".content");
+          if (content && category.parent) {
+            content.innerHTML = `<div>The opening times are ${numberToTime(category.parent?.start)} to ${numberToTime(category.parent?.end)}</div>`;
+            content.innerHTML += `<div>The appointment was scheduled at ${numberToTime(feature.time)} and the point waited approx. ${feature.wait} minute${feature.wait > 1 ? "s" : ""}.</div>`;
+          }
+        }
+      }     
     } else {
       objExplorer.classList.add("hidden");
     }
   }
+}
+
+function updateTimelineClickHandler(e: Event): void {
+  const btn: HTMLElement = e.target as HTMLElement; 
+  btn.classList.add("hidden");
+  
+
+ 
+  data.push(sequence);
+  data.splice(0, 1);
+  initData(data);
+  setTimeout(() => btn.classList.remove("hidden"), 2000);
 }
 
 function numberToTime(value: number): string {
@@ -552,7 +123,7 @@ function numberToTime(value: number): string {
 
 function addSequence(seq: TSequence): HTMLElement {
   seq.el = document.createElement("div");
-  seq.el.classList.add("sequence");
+  seq.el.classList.add("sequence", "hidden");
   if (seq.relHeight) {
     seq.el.style.height = `${seq.relHeight * 100}%`;
   } else {
@@ -654,7 +225,21 @@ function updatePointXY(point: TPoint, category: TCategory): void {
 
 function initData(seq: TSequence[]): void {
   const legend: Map<string, number> = new Map<string, number>();
+
   const legendItems = document.querySelector(".legend-items");
+  
+  if (legendItems) {
+    legendItems.innerHTML = "";
+  }
+
+  if (timeline) {
+    const list: HTMLElement[] = Array.from(document.querySelectorAll(".sequence"));
+    let j = 0;
+    for (let i = list.length - 1; i >= 0; i--) {
+      list[i].classList.add("hidden");
+      setTimeout(() => timeline.removeChild(list[i]), 400);
+    }
+  }
 
   // 1st pass: determine dimensions, etc
   let totalTimes = 0;
@@ -683,8 +268,6 @@ function initData(seq: TSequence[]): void {
         }
         pt.top = (pt.time - s.start) / (s.end - s.start);
       });
-      
-    
 
       c.points.forEach(pt => {
         if (c.maxWait !== undefined) {
@@ -716,7 +299,10 @@ function initData(seq: TSequence[]): void {
   });
 
   // 3rd pass: draw points and quantiles
-  seq.forEach(s => {
+  seq.forEach((s, n) => {
+    setTimeout(() => {
+      s.el?.classList.remove("hidden");
+    }, 100 + (100 * n));
     s.categories.forEach(c => {
       addQuantiles(c);
       c.points.forEach(pt => {
@@ -740,6 +326,7 @@ function initData(seq: TSequence[]): void {
 initData(data);
 
 timeline?.addEventListener("click", timelineclickHandler);
-viewLegendButton?.addEventListener("click", toggleLegendClickHandler);
+btnViewLegend?.addEventListener("click", toggleLegendClickHandler);
+btnUpdateTimeline?.addEventListener("click", updateTimelineClickHandler);
 closeLegendButton?.addEventListener("click", toggleLegendClickHandler);
 window.addEventListener("resize", updatePoints);
