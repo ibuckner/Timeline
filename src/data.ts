@@ -1,6 +1,7 @@
 import { TSequence, TCategory } from "./typings/timeline";
+import { randomInt } from "./random";
 
-export class DataGenerator {
+export class DemoData {
   private _categories: TCategory[] = [
     {
       name: "Late Arrival (LAT)",
@@ -101,9 +102,5 @@ export class DataGenerator {
       end: 2300,
       categories: []
     };
-  }
-
-  private _randomInt(min: number, max: number): number {
-    return Math.floor(Math.random() * (max - min + 1) + min);
   }
 }

@@ -1,24 +1,27 @@
 import { TSequence, TCategory, TPoint } from "./typings/timeline";
 import { ascending, deviation, median, quantile } from "d3-array";
-import { DataGenerator } from "./data";
+import { DemoData } from "./data";
+import { numberToTime } from "./format";
+import { Legend } from "./legend";
 
-const generator = new DataGenerator(1);
+const demo: DemoData = new DemoData(1);
 const data: TSequence[] = [];
-data.push(generator.addRandomSequence());
-data.push(generator.addRandomSequence());
-data.push(generator.addRandomSequence());
-data.push(generator.addRandomSequence());
-data.push(generator.addRandomSequence());
+data.push(demo.addRandomSequence());
+data.push(demo.addRandomSequence());
+data.push(demo.addRandomSequence());
+data.push(demo.addRandomSequence());
+data.push(demo.addRandomSequence());
+
+const container = document.querySelector(".container") as HTMLElement;
+const legend = new Legend(container);
+
 
 let activePoint: TPoint | undefined; // which point is currently highlighted?
 let activeEvent: any;
 const objExplorer = document.querySelector(".object");
 const timeline = document.querySelector(".timeline");
-const legend = document.querySelector(".legend");
-const legendItems = document.querySelector(".legend-items");
 const btnViewLegend = document.getElementById("btnShowLegend");
 const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
-const closeLegendButton = document.querySelector(".close-legend");
 let resizeTimer: any;
 
 // what happens when someone clicks on a point
@@ -52,15 +55,8 @@ function timelineclickHandler(_: Event): void {
   }
 }
 
-function toggleLegendClickHandler(): void {
-  if (legend?.classList.contains("hidden")) {
-    legend.classList.remove("hidden");
-    btnViewLegend?.classList.add("hidden");
-  } else {
-    legend?.classList.add("hidden");
-    btnViewLegend?.classList.remove("hidden");
-  }
-}
+window.addEventListener("legend-visible", () => btnViewLegend?.classList.add("hidden"));
+window.addEventListener("legend-hidden", () => btnViewLegend?.classList.remove("hidden"));
 
 function togglePointSelection(point?: TPoint): void {
   if (point) {
@@ -107,18 +103,9 @@ function toggleObjectExplorer(feature?: any): void {
 function updateTimelineClickHandler(e: Event): void {
   const btn: HTMLElement = e.target as HTMLElement; 
   btn.classList.add("hidden");
-  
-
- 
-  data.push(sequence);
-  data.splice(0, 1);
+  data.push(demo.addRandomSequence())
   initData(data);
   setTimeout(() => btn.classList.remove("hidden"), 2000);
-}
-
-function numberToTime(value: number): string {
-  let t = ("0" + value.toString()).slice(-4);
-  return t.slice(0,2) + ":" + t.slice(-2);
 }
 
 function addSequence(seq: TSequence): HTMLElement {
@@ -130,15 +117,6 @@ function addSequence(seq: TSequence): HTMLElement {
     throw new Error("Sequence is missing relative height");
   }
   return seq.el;
-}
-
-function addLegendItem(category: TCategory): HTMLElement {
-  const li = document.createElement("div");
-  li.classList.add("legend-item");
-  li.style.backgroundColor = category.backColor;
-  li.style.borderColor = category.foreColor;
-  li.textContent = category.name;
-  return li;
 }
 
 function addCategory(category: TCategory, avgWait?: number): HTMLElement {
@@ -162,7 +140,7 @@ function addQuantiles(category: TCategory): void {
   med.textContent = "";
   med.style.backgroundColor = category.foreColor;
   med.style.borderColor = category.foreColor;
-  med.title = `Median is ${category.median}`;
+  med.title = `Median is ${category.stat?.median}`;
   category.el?.appendChild(med);
   updateLinePointX(category);
 }
@@ -197,8 +175,8 @@ function updateLinePointX(category: TCategory): void {
     const box: ClientRect = category.el.getBoundingClientRect();
     const med: HTMLElement | null = category.el.querySelector(".median");
     if (med) {
-      if (category.median !== undefined && category.maxWait !== undefined) {
-        med.style.transform = `translateX(${(box.width - 4) * (category.median / category.maxWait)}px)`;
+      if (category.stat?.median && category.maxWait !== undefined) {
+        med.style.transform = `translateX(${(box.width - 4) * (category.stat.median / category.maxWait)}px)`;
       }
     }
   } else {
@@ -224,14 +202,6 @@ function updatePointXY(point: TPoint, category: TCategory): void {
 }
 
 function initData(seq: TSequence[]): void {
-  const legend: Map<string, number> = new Map<string, number>();
-
-  const legendItems = document.querySelector(".legend-items");
-  
-  if (legendItems) {
-    legendItems.innerHTML = "";
-  }
-
   if (timeline) {
     const list: HTMLElement[] = Array.from(document.querySelectorAll(".sequence"));
     let j = 0;
@@ -244,23 +214,23 @@ function initData(seq: TSequence[]): void {
   // 1st pass: determine dimensions, etc
   let totalTimes = 0;
   seq.forEach(s => {
+    legend.populate(s.categories);
     totalTimes += s.end - s.start;
     const w = Math.floor(100 / (s.categories.length === 0 ? 1 : s.categories.length));
     let waits: number[] = [];
-    s.categories.forEach(c => {
-      if (!legend.has(c.name)) {
-        legendItems?.appendChild(addLegendItem(c));
-        legend.set(c.name, 1);
-      }
+    s.categories.forEach((c: TCategory) => {
       c.parent = s;
       c.avgWidth = w;
       c.maxWait = 1;
       c.points.sort((a, b) => ascending(a.wait, b.wait));
-      c.median = median(c.points, d => d.wait);
-      c.q25 = quantile(c.points, 0.25, d => d.wait);
-      c.q50 = quantile(c.points, 0.5, d => d.wait);
-      c.q75 = quantile(c.points, 0.75, d => d.wait);
-      c.std = deviation(c.points, d => d.wait);
+      c.stat = {};
+      if (c.stat) {
+        c.stat.median = median(c.points, d => d.wait);
+        c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
+        c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
+        c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
+        c.stat.std = deviation(c.points, d => d.wait);
+      }
 
       c.points.forEach(pt => {        
         if (c.maxWait !== undefined && pt.wait > c.maxWait) {
@@ -326,7 +296,6 @@ function initData(seq: TSequence[]): void {
 initData(data);
 
 timeline?.addEventListener("click", timelineclickHandler);
-btnViewLegend?.addEventListener("click", toggleLegendClickHandler);
+btnViewLegend?.addEventListener("click", () => legend.toggle());
 btnUpdateTimeline?.addEventListener("click", updateTimelineClickHandler);
-closeLegendButton?.addEventListener("click", toggleLegendClickHandler);
 window.addEventListener("resize", updatePoints);
