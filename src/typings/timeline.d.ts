@@ -1,6 +1,6 @@
 export type TPoint = {
   el?: HTMLElement,
-  id: number,
+  id?: number,
   left?: number,
   parent?: TCategory,
   time: number,
@@ -27,7 +27,7 @@ export type TSequence = {
   categories: TCategory[],
   el?: HTMLElement,
   end: number,
-  id: number,
+  id?: number,
   relHeight?: number,
   start: number
 }
