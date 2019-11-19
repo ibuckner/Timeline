@@ -49,21 +49,19 @@ export class DemoData {
 
   public recalc(): DemoData {
     this.data.forEach(s => {
-      const w = Math.floor(100 / (s.categories.length === 0 ? 1 : s.categories.length));
       let waits: number[] = [];
       s.categories.forEach((c: TCategory) => {
         c.parent = s;
-        c.avgWidth = w;
         c.maxWait = 1;
         c.points.sort((a, b) => ascending(a.wait, b.wait));
-        c.stat = {};
+        /*c.stat = {};
         if (c.stat) {
           c.stat.median = median(c.points, d => d.wait);
           c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
           c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
           c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
           c.stat.std = deviation(c.points, d => d.wait);
-        }
+        }*/
   
         c.points.forEach(pt => {        
           if (c.maxWait !== undefined && pt.wait > c.maxWait) {

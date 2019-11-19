@@ -3,24 +3,37 @@ import { DemoData } from "./data";
 import { numberToTime } from "./format";
 import { Legend } from "./legend";
 import { Sequence } from "sequence";
+import { Category } from "category";
 
 const demo: DemoData = new DemoData(1);
 demo.addRandomSequence()
     .addRandomSequence()
     .addRandomSequence()
-    .addRandomSequence()
-    .addRandomSequence()
     .recalc();
 
 const container = document.querySelector(".container") as HTMLElement;
-const legend = new Legend(container);
-legend.populate(demo.data);
+const legend: Legend = new Legend(container);
+legend
+  .data(demo.data)
+  .draw();
 
 const timeline = document.querySelector(".timeline") as HTMLElement;
-const sequence = new Sequence();
-sequence
+const sequences: Sequence = new Sequence();
+sequences
   .data(demo.data)
   .draw(timeline);
+
+const categories: Category = new Category();
+categories
+  .data(sequences.data())
+  .draw();
+
+
+
+
+
+
+
 
 
 
@@ -121,24 +134,7 @@ function toggleObjectExplorer(feature?: any): void {
 function updateTimelineClickHandler(e: Event): void {
   const btn: HTMLElement = e.target as HTMLElement; 
   btn.classList.add("hidden");
-  //data.push(demo.addRandomSequence())
-  //initData(data);
   setTimeout(() => btn.classList.remove("hidden"), 2000);
-}
-
-function addCategory(category: TCategory, avgWait?: number): HTMLElement {
-  const c = document.createElement("div");
-  c.classList.add("category");
-  c.title = `${category.name}\nMax waiting time (min): ${category.maxWait}`;
-  c.style.backgroundColor = category.backColor;
-  c.style.borderColor = category.foreColor;
-  if (category.avgWidth && category.maxWait && avgWait !== undefined) {
-    c.style.flexBasis = `${category.avgWidth * (category.maxWait / avgWait)}%`;
-  } else {
-    throw new Error("Category is missing average width and maximum waiting times");
-  }
-  c.addEventListener("click", (e: Event) => eventClickHandler(e, category));
-  return c;
 }
 
 function addQuantiles(category: TCategory): void {

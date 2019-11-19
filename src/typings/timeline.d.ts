@@ -8,8 +8,14 @@ export type TPoint = {
   wait: number
 }
 
+export type TLegendItem = {
+  backColor: string,
+  el?: HTMLElement,
+  foreColor: string,
+  name: string
+}
+
 export type TCategory = {
-  avgWidth?: number,
   backColor: string,
   el?: HTMLElement,
   end: number,

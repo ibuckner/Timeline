@@ -2,156 +2,6 @@ function ascending(a, b) {
   return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
 }
 
-function variance(values, valueof) {
-  let count = 0;
-  let delta;
-  let mean = 0;
-  let sum = 0;
-  if (valueof === undefined) {
-    for (let value of values) {
-      if (value != null && (value = +value) >= value) {
-        delta = value - mean;
-        mean += delta / ++count;
-        sum += delta * (value - mean);
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
-        delta = value - mean;
-        mean += delta / ++count;
-        sum += delta * (value - mean);
-      }
-    }
-  }
-  if (count > 1) return sum / (count - 1);
-}
-
-function deviation(values, valueof) {
-  const v = variance(values, valueof);
-  return v ? Math.sqrt(v) : v;
-}
-
-function max(values, valueof) {
-  let max;
-  if (valueof === undefined) {
-    for (const value of values) {
-      if (value != null
-          && (max < value || (max === undefined && value >= value))) {
-        max = value;
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null
-          && (max < value || (max === undefined && value >= value))) {
-        max = value;
-      }
-    }
-  }
-  return max;
-}
-
-function min(values, valueof) {
-  let min;
-  if (valueof === undefined) {
-    for (const value of values) {
-      if (value != null
-          && (min > value || (min === undefined && value >= value))) {
-        min = value;
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null
-          && (min > value || (min === undefined && value >= value))) {
-        min = value;
-      }
-    }
-  }
-  return min;
-}
-
-// Based on https://github.com/mourner/quickselect
-// ISC license, Copyright 2018 Vladimir Agafonkin.
-function quickselect(array, k, left = 0, right = array.length - 1, compare = ascending) {
-  while (right > left) {
-    if (right - left > 600) {
-      const n = right - left + 1;
-      const m = k - left + 1;
-      const z = Math.log(n);
-      const s = 0.5 * Math.exp(2 * z / 3);
-      const sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * (m - n / 2 < 0 ? -1 : 1);
-      const newLeft = Math.max(left, Math.floor(k - m * s / n + sd));
-      const newRight = Math.min(right, Math.floor(k + (n - m) * s / n + sd));
-      quickselect(array, k, newLeft, newRight, compare);
-    }
-
-    const t = array[k];
-    let i = left;
-    let j = right;
-
-    swap(array, left, k);
-    if (compare(array[right], t) > 0) swap(array, left, right);
-
-    while (i < j) {
-      swap(array, i, j), ++i, --j;
-      while (compare(array[i], t) < 0) ++i;
-      while (compare(array[j], t) > 0) --j;
-    }
-
-    if (compare(array[left], t) === 0) swap(array, left, j);
-    else ++j, swap(array, j, right);
-
-    if (j <= k) left = j + 1;
-    if (k <= j) right = j - 1;
-  }
-  return array;
-}
-
-function swap(array, i, j) {
-  const t = array[i];
-  array[i] = array[j];
-  array[j] = t;
-}
-
-function* numbers(values, valueof) {
-  if (valueof === undefined) {
-    for (let value of values) {
-      if (value != null && (value = +value) >= value) {
-        yield value;
-      }
-    }
-  } else {
-    let index = -1;
-    for (let value of values) {
-      if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
-        yield value;
-      }
-    }
-  }
-}
-
-function quantile(values, p, valueof) {
-  values = Float64Array.from(numbers(values, valueof));
-  if (!(n = values.length)) return;
-  if ((p = +p) <= 0 || n < 2) return min(values);
-  if (p >= 1) return max(values);
-  var n,
-      i = (n - 1) * p,
-      i0 = Math.floor(i),
-      value0 = max(quickselect(values, i0).subarray(0, i0 + 1)),
-      value1 = min(values.subarray(i0 + 1));
-  return value0 + (value1 - value0) * (i - i0);
-}
-
-function median(values, valueof) {
-  return quantile(values, 0.5, valueof);
-}
-
 function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
@@ -170,17 +20,42 @@ class Point {
 
 class Category {
     constructor() {
+        this._data = [];
     }
-    data() {
+    data(d) {
+        this._data = d;
         return this;
     }
     draw() {
+        this._data.forEach((seq) => {
+            const w = Math.floor(100 / (seq.categories.length === 0 ? 1 : seq.categories.length));
+            seq.categories.forEach((cat) => {
+                var _a;
+                const c = document.createElement("div");
+                c.classList.add("category");
+                c.title = `${cat.name}\nMax waiting time (min): ${cat.maxWait}`;
+                c.style.backgroundColor = cat.backColor;
+                c.style.borderColor = cat.foreColor;
+                if (cat.maxWait && seq.avgWait !== undefined) {
+                    c.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
+                }
+                else {
+                    throw new Error("Category is missing average width and maximum waiting times");
+                }
+                c.addEventListener("click", (e) => console.log("Not available"));
+                cat.el = c;
+                (_a = seq.el) === null || _a === void 0 ? void 0 : _a.appendChild(cat.el);
+            });
+        });
         return this;
     }
     static random(exclude) {
         const temp = [];
         Category._categories.forEach(c => {
             if (!exclude.includes(c.name)) {
+                c.points = [];
+                c.start = 0;
+                c.end = 2359;
                 temp.push(c);
             }
         });
@@ -194,86 +69,60 @@ Category._categories = [
     {
         name: "Late Arrival (LAT)",
         foreColor: "rgb(248, 80, 108)",
-        backColor: "rgb(248, 156, 171, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgb(248, 156, 171, 0.5)"
     },
     {
         name: "Cancelled (CAN)",
         foreColor: "rgb(228, 146, 39)",
-        backColor: "rgba(221, 170, 103, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(221, 170, 103, 0.5)"
     },
     {
         name: "Waiting Height & Weight (WHW)",
         foreColor: "rgb(41, 113, 247)",
-        backColor: "rgba(100, 149, 237, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(100, 149, 237, 0.5)"
     },
     {
         name: "In consultation (ICO)",
         foreColor: "rgb(81, 66, 167)",
-        backColor: "rgba(123, 104, 238, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(123, 104, 238, 0.5)"
     },
     {
         name: "In blood room (IBR)",
         foreColor: "rgb(247, 65, 44)",
-        backColor: "rgba(250, 128, 114, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(250, 128, 114, 0.5)"
     },
     {
         name: "Did not attend (DNA)",
         foreColor: "rgb(143, 63, 248)",
-        backColor: "rgba(139, 107, 180, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(139, 107, 180, 0.5)"
     },
     {
         name: "Identified by kiosk (KIO)",
         foreColor: "rgb(17, 141, 59)",
-        backColor: "rgba(17, 141, 59, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(17, 141, 59, 0.5)"
     },
     {
         name: "Waiting for consulation (WCO)",
         foreColor: "rgb(224, 148, 5)",
-        backColor: "rgba(245, 181, 61, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(245, 181, 61, 0.5)"
     },
     {
         name: "Waiting for blood (WB)",
         foreColor: "rgb(20, 105, 105)",
-        backColor: "rgba(20, 105, 105, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(20, 105, 105, 0.5)"
     },
     {
         name: "Completed (COM)",
         foreColor: "rgb(116, 170, 7)",
-        backColor: "rgba(154, 205, 50, 0.75)",
-        points: [],
-        start: 0,
-        end: 2300
+        backColor: "rgba(154, 205, 50, 0.5)"
     }
 ];
 
 class DemoData {
+    /**
+     * Initialise generator
+     * @param {number} start - id index to begin at
+     */
     constructor(start, options) {
         this.data = [];
         this.maximumPoints = 25;
@@ -307,21 +156,19 @@ class DemoData {
     }
     recalc() {
         this.data.forEach(s => {
-            const w = Math.floor(100 / (s.categories.length === 0 ? 1 : s.categories.length));
             let waits = [];
             s.categories.forEach((c) => {
                 c.parent = s;
-                c.avgWidth = w;
                 c.maxWait = 1;
                 c.points.sort((a, b) => ascending(a.wait, b.wait));
-                c.stat = {};
+                /*c.stat = {};
                 if (c.stat) {
-                    c.stat.median = median(c.points, d => d.wait);
-                    c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
-                    c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
-                    c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
-                    c.stat.std = deviation(c.points, d => d.wait);
-                }
+                  c.stat.median = median(c.points, d => d.wait);
+                  c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
+                  c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
+                  c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
+                  c.stat.std = deviation(c.points, d => d.wait);
+                }*/
                 c.points.forEach(pt => {
                     if (c.maxWait !== undefined && pt.wait > c.maxWait) {
                         c.maxWait = pt.wait;
@@ -344,60 +191,211 @@ class DemoData {
     }
 }
 
+/**
+ * Returns number as hh:mm
+ * @param {number} value - number should conform to hhmm expectations
+ */
 function numberToTime(value) {
     let t = ("0" + value.toString()).slice(-4);
     return t.slice(0, 2) + ":" + t.slice(-2);
 }
 
+class Slicer {
+    constructor(list) {
+        this._ = new Map();
+        if (list) {
+            this.data = list;
+        }
+    }
+    get data() {
+        return this._;
+    }
+    set data(list) {
+        if (Array.isArray(list)) {
+            this._.clear();
+            list.forEach((item) => {
+                this._.set(item, { filtered: false, selected: false });
+            });
+        }
+    }
+    clear() {
+        this._.forEach((_, key) => {
+            this._.set(key, { filtered: false, selected: false });
+        });
+        return this;
+    }
+    toggle(item, ctrlKey = false) {
+        this._.forEach((value, key) => {
+            if (item !== key) {
+                value.selected = ctrlKey ? value.selected : false;
+                value.filtered = ctrlKey ? false : true;
+            }
+            else {
+                if (value.selected) {
+                    value.selected = false;
+                    value.filtered = false;
+                }
+                else {
+                    value.selected = !value.selected;
+                    value.filtered = !value.selected;
+                }
+            }
+            this._.set(key, value);
+        });
+        const selectionList = [];
+        let filtered = 0;
+        this._.forEach((value, key) => {
+            if (value.selected) {
+                selectionList.push(key);
+            }
+            if (value.filtered) {
+                ++filtered;
+            }
+        });
+        if (filtered === this._.size ||
+            selectionList.length === 0 ||
+            selectionList.length === this._.size) {
+            this.clear();
+        }
+        else if (selectionList.length > 0 && filtered === 0) {
+            this._.forEach((value, key) => {
+                value.filtered = !value.selected;
+                this._.set(key, value);
+            });
+        }
+        return this;
+    }
+}
+
 class Legend {
     constructor(container) {
         this._legendMap = new Map();
+        this._slicer = new Slicer();
         this.element = document.createElement("div");
         this.element.classList.add("legend", "hidden");
         container.appendChild(this.element);
+        const menu = document.createElement("div");
+        menu.classList.add("menu-legend");
+        this.element.appendChild(menu);
+        this.btnFilter = document.createElement("div");
+        this.btnFilter.classList.add("filter-legend", "menu-item", "hidden");
+        this.btnFilter.textContent = "clear filter";
+        this.btnFilter.addEventListener("click", () => this.clear());
+        menu.appendChild(this.btnFilter);
         this.btnClose = document.createElement("div");
-        this.btnClose.classList.add("close-legend");
+        this.btnClose.classList.add("close-legend", "menu-item");
         this.btnClose.textContent = "close";
-        this.btnClose.addEventListener("click", () => this.toggle);
-        this.element.appendChild(this.btnClose);
+        this.btnClose.addEventListener("click", () => this.toggle());
+        menu.appendChild(this.btnClose);
         this.title = document.createElement("h3");
         this.title.textContent = "Categories";
         this.element.appendChild(this.title);
-        this.items = document.createElement("div");
-        this.items.classList.add("legend-items");
-        this.element.appendChild(this.items);
+        const items = document.createElement("div");
+        items.classList.add("legend-items");
+        this.element.appendChild(items);
     }
     get visible() {
         return !this.element.classList.contains("hidden");
     }
-    addItem(label, foreColor, backColor) {
+    /**
+     * Clear any filtered legend items
+     */
+    clear() {
+        this._slicer.clear();
+        Array.from(this.element.querySelectorAll(".filtered"))
+            .forEach(el => el.classList.remove("filtered"));
+        this.btnFilter.classList.add("hidden");
+        window.dispatchEvent(new CustomEvent("legend-filter", { detail: [] }));
+        return this;
+    }
+    /**
+     * Populates the legend with categories
+     * @param {TSequence[]} data - list of categories
+     */
+    data(data) {
+        const labels = [];
+        data.forEach((s) => {
+            s.categories.forEach((c) => {
+                if (!this._legendMap.has(c.name)) {
+                    labels.push(c.name);
+                    this._legendMap.set(c.name, {
+                        backColor: c.backColor,
+                        foreColor: c.foreColor,
+                        name: c.name
+                    });
+                }
+            });
+        });
+        this._slicer.data = labels;
+        return this;
+    }
+    /**
+     * Draws the legend items
+     */
+    draw() {
+        this.element.querySelector(".legend-items").innerHTML = "";
+        this._legendMap.forEach((item) => {
+            item.el = this._addItem(item.name, item.foreColor, item.backColor);
+            this._legendMap.set(item.name, item);
+        });
+    }
+    /**
+     * Handles the click event on legend items
+     */
+    handleClick(e) {
+        const key = e.target.textContent || "";
+        const clicked = this._legendMap.get(key);
+        if (clicked) {
+            this._slicer.toggle(clicked.name, e.ctrlKey);
+        }
+        const selectionList = [];
+        this.btnFilter.classList.add("hidden");
+        this._slicer.data.forEach((value, key) => {
+            var _a, _b, _c, _d;
+            const item = this._legendMap.get(key);
+            if (value.selected) {
+                selectionList.push(key);
+            }
+            if (value.filtered) {
+                (_b = (_a = item) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.add("filtered");
+                this.btnFilter.classList.remove("hidden");
+            }
+            else {
+                (_d = (_c = item) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("filtered");
+            }
+        });
+        window.dispatchEvent(new CustomEvent("legend-filter", { detail: selectionList }));
+    }
+    /**
+     * Hide legend
+     */
+    hide() {
+        this.element.classList.add("hidden");
+        window.dispatchEvent(new CustomEvent("legend-hidden"));
+    }
+    /**
+     * Display legend
+     */
+    show() {
+        this.element.classList.remove("hidden");
+        window.dispatchEvent(new CustomEvent("legend-visible"));
+    }
+    /**
+     * Show/hide legend
+     */
+    toggle() {
+        this.visible ? this.hide() : this.show();
+    }
+    _addItem(label, foreColor, backColor) {
         const li = document.createElement("div");
         li.classList.add("legend-item");
         li.style.backgroundColor = backColor;
         li.style.borderColor = foreColor;
         li.textContent = label;
-        this.items.appendChild(li);
-    }
-    hide() {
-        this.element.classList.add("hidden");
-        window.dispatchEvent(new CustomEvent("legend-hidden"));
-    }
-    populate(sequences) {
-        sequences.forEach((s) => {
-            s.categories.forEach((c) => {
-                if (!this._legendMap.has(c.name)) {
-                    this.addItem(c.name, c.foreColor, c.backColor);
-                    this._legendMap.set(c.name, true);
-                }
-            });
-        });
-    }
-    show() {
-        this.element.classList.remove("hidden");
-        window.dispatchEvent(new CustomEvent("legend-visible"));
-    }
-    toggle() {
-        this.visible ? this.hide() : this.show();
+        li.addEventListener("click", e => this.handleClick(e));
+        this.element.querySelector(".legend-items")
+            .appendChild(li);
+        return li;
     }
 }
 
@@ -406,8 +404,11 @@ class Sequence {
         this._data = [];
     }
     data(d) {
-        this._data = d;
-        return this;
+        if (d) {
+            this._data = d;
+            return this;
+        }
+        return this._data;
     }
     draw(container) {
         let totalTimes = 0;
@@ -415,14 +416,9 @@ class Sequence {
         this._data.forEach(s => {
             s.relHeight = (s.end - s.start) / totalTimes;
             s.el = document.createElement("div");
-            s.el.classList.add("sequence", "hidden");
+            s.el.classList.add("sequence");
             s.el.style.height = `${s.relHeight * 100}%`;
             container.appendChild(s.el);
-            s.categories.forEach(c => {
-                const cat = new Category();
-                cat.data()
-                    .draw();
-            });
         });
         return this;
     }
@@ -433,22 +429,27 @@ const demo = new DemoData(1);
 demo.addRandomSequence()
     .addRandomSequence()
     .addRandomSequence()
-    .addRandomSequence()
-    .addRandomSequence()
     .recalc();
 const container = document.querySelector(".container");
 const legend = new Legend(container);
-legend.populate(demo.data);
+legend
+    .data(demo.data)
+    .draw();
 const timeline = document.querySelector(".timeline");
-const sequence = new Sequence();
-sequence
+const sequences = new Sequence();
+sequences
     .data(demo.data)
     .draw(timeline);
-let activePoint;
+const categories = new Category();
+categories
+    .data(sequences.data())
+    .draw();
+let activePoint; // which point is currently highlighted?
 const objExplorer = document.querySelector(".object");
 const btnViewLegend = document.getElementById("btnShowLegend");
 const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
 let resizeTimer;
+// what happens when someone clicks anywhere in timeline
 function timelineclickHandler(_) {
     togglePointSelection(activePoint);
     activePoint = undefined;
@@ -476,7 +477,7 @@ function toggleObjectExplorer(feature) {
         if (feature) {
             objExplorer.classList.remove("hidden");
             const heading = (_a = objExplorer) === null || _a === void 0 ? void 0 : _a.querySelector("h3");
-            if (feature.points) {
+            if (feature.points) { // category clicked
                 if (heading) {
                     heading.textContent = `${feature.name}`;
                 }
@@ -485,7 +486,7 @@ function toggleObjectExplorer(feature) {
                     content.innerHTML = `<div>The opening times are ${numberToTime((_b = feature.parent) === null || _b === void 0 ? void 0 : _b.start)} to ${numberToTime((_c = feature.parent) === null || _c === void 0 ? void 0 : _c.end)}</div>`;
                 }
             }
-            else {
+            else { // point clicked
                 const category = feature.parent;
                 if (category) {
                     if (heading) {
@@ -514,6 +515,12 @@ function updatePoints() {
         clearTimeout(resizeTimer);
     }
     resizeTimer = setTimeout(() => {
+        /*data.forEach(s => {
+          s.categories.forEach(c => {
+            updateLinePointX(c);
+            c.points.forEach(pt => updatePointXY(pt, c));
+          });
+        });*/
     }, 350);
 }
 (_a = timeline) === null || _a === void 0 ? void 0 : _a.addEventListener("click", timelineclickHandler);

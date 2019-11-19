@@ -121,24 +121,7 @@ h3 {
 
 .object.hidden { transform: translate(0, 100%) }
 
-/* Legend */
-
-.legend {
-  background-color: #fff;
-  border: 1px solid #aaa;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  justify-content: flex-start;
-  padding: 10px;
-  right: 0;
-  top: 50%;
-  transform: translate(0%, -50%);
-  transition: all 0.6s ease-in-out;
-  z-index: 10000;
-}
-
-.legend.hidden { transform: translate(100%, -50%) }
+/* Menu */
 
 .menu-button {
   background-color: #fff;
@@ -156,36 +139,4 @@ h3 {
 .menu-button.hidden {
   opacity: 0;
   user-select: none;
-}
-
-.close-legend {
-  cursor: pointer;
-  font-size: 0.9em;
-  font-variant: small-caps;
-  text-align: right;
-}
-
-.close-legend:hover { color: #900 }
-
-.legend-items {
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  transition: all 0.6s ease-in-out;
-}
-
-.legend-item {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 0.9rem;
-  height: 42px;
-  justify-content: center;
-  margin-bottom: 2px;
-  max-width: 120px;
-  padding: 3px 1px 3px 1px;
-  text-align: center;
-  transition: width 500ms ease-in-out;
 }

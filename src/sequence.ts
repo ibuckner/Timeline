@@ -1,5 +1,4 @@
 import { TSequence } from "./typings/timeline";
-import { Category } from "./category";
 
 export class Sequence {
   private _data: TSequence[] = [];
@@ -8,9 +7,12 @@ export class Sequence {
 
   }
 
-  public data(d: TSequence[]): Sequence {
-    this._data = d;
-    return this;
+  public data(d?: TSequence[]): any {
+    if (d) {
+      this._data = d;
+      return this;
+    }
+    return this._data;
   }
 
   public draw(container: HTMLElement): Sequence {
@@ -19,18 +21,9 @@ export class Sequence {
     this._data.forEach(s => {
       s.relHeight = (s.end - s.start) / totalTimes;
       s.el = document.createElement("div");
-      s.el.classList.add("sequence", "hidden");
+      s.el.classList.add("sequence");
       s.el.style.height = `${s.relHeight * 100}%`;
       container.appendChild(s.el);
-
-      s.categories.forEach(c => {
-        const cat: Category = new Category();
-        cat.data()
-           .draw()
-        // c.el = addCategory(c, s.avgWait);
-      });
-
-
     });
     return this;
   }
