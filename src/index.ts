@@ -1,9 +1,10 @@
-import { TSequence, TCategory, TPoint } from "./typings/timeline";
+import { TCategory, TPoint } from "./typings/timeline";
 import { DemoData } from "./data";
 import { numberToTime } from "./format";
 import { Legend } from "./legend";
 import { Sequence } from "sequence";
 import { Category } from "category";
+import { Point } from "point";
 
 const demo: DemoData = new DemoData(1);
 demo.addRandomSequence()
@@ -25,6 +26,11 @@ sequences
 
 const categories: Category = new Category();
 categories
+  .data(sequences.data())
+  .draw();
+
+const points: Point = new Point();
+points
   .data(sequences.data())
   .draw();
 
@@ -54,15 +60,6 @@ const objExplorer = document.querySelector(".object");
 const btnViewLegend = document.getElementById("btnShowLegend");
 const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
 let resizeTimer: any;
-
-// what happens when someone clicks on a point
-function pointClickHandler(e: Event, point: TPoint): void {
-  e.stopPropagation();
-  togglePointSelection(activePoint);
-  activePoint = activePoint === point ? undefined : point;
-  togglePointSelection(activePoint);
-  toggleObjectExplorer(activePoint);
-}
 
 // what happens when someone clicks on an category
 function eventClickHandler(e: Event, category: TCategory): void {
@@ -148,17 +145,6 @@ function addQuantiles(category: TCategory): void {
   updateLinePointX(category);
 }
 
-function addPoint(point: TPoint, category: TCategory): HTMLElement {
-  point.el = document.createElement("div");
-  point.el.classList.add("pt");
-  point.el.style.backgroundColor = category.foreColor;
-  point.el.style.borderColor = category.foreColor;
-  point.el.title = `Appointment time: ${numberToTime(point.time)}\nWaiting time (min): ${point.wait}`;
-  updatePointXY(point, category);
-  point.el.addEventListener("click", e => pointClickHandler(e, point));
-  return point.el;
-}
-
 function updatePoints() {
   if (resizeTimer) {
     clearTimeout(resizeTimer);
@@ -187,48 +173,13 @@ function updateLinePointX(category: TCategory): void {
   }
 }
 
-function updatePointXY(point: TPoint, category: TCategory): void {
-  if (category.el) {
-    const box: ClientRect = category.el.getBoundingClientRect();
-    if (point.el) {
-      if (point.left !== undefined && point.top !== undefined) {
-        point.el.style.transform = `translate(${(box.width - 7.5) * point.left}px, ${(box.height - 7.5) * point.top}px)`;
-      } else {
-        throw new Error("Point is missing top and left properties");
-      }
-    } else {
-      throw new Error("Point is missing UI element");
-    }
-  } else {
-    throw new Error("Category is missing UI element");
+const resizeObserver = new ResizeObserver((entries) => {
+  for (let entry of entries) {
+    updatePoints();
   }
-}
-
-function initData(seq: TSequence[]): void {
-  // 3rd pass: draw points and quantiles
-  seq.forEach((s, n) => {
-    setTimeout(() => {
-      s.el?.classList.remove("hidden");
-    }, 100 + (100 * n));
-    s.categories.forEach(c => {
-      addQuantiles(c);
-      c.points.forEach(pt => {
-        pt.el = addPoint(pt, c);
-        if (c.el !== undefined) {
-          c.el.appendChild(pt.el);
-        }
-      });
-    });
-  });
-
-  const resizeObserver = new ResizeObserver((entries) => {
-    for (let entry of entries) {
-      updatePoints();
-    }
-  });
-  if (timeline) {
-    resizeObserver.observe(timeline);
-  }
+});
+if (timeline) {
+  resizeObserver.observe(timeline);
 }
 
 timeline?.addEventListener("click", timelineclickHandler);

@@ -8,118 +8,19 @@
   function randomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
   }
-
-  class Point {
-      constructor() {
+  function randomTime(min, max, round) {
+      let t = Math.floor(Math.random() * (max - min + 1) + min);
+      let hh = Math.floor(t / 100), mm = t % 100;
+      if (mm > 59) {
+          mm = 100 - mm;
+          ++hh;
       }
-      static random() {
-          const result = {
-              time: 0,
-              wait: randomInt(1, 60)
-          };
-          return result;
+      if (hh > 23) {
+          hh = 0;
       }
+      t = hh * 100 + mm;
+      return t > max ? max : t;
   }
-
-  class Category {
-      constructor() {
-          this._data = [];
-      }
-      data(d) {
-          this._data = d;
-          return this;
-      }
-      draw() {
-          this._data.forEach((seq) => {
-              const w = Math.floor(100 / (seq.categories.length === 0 ? 1 : seq.categories.length));
-              seq.categories.forEach((cat) => {
-                  var _a;
-                  const c = document.createElement("div");
-                  c.classList.add("category");
-                  c.title = `${cat.name}\nMax waiting time (min): ${cat.maxWait}`;
-                  c.style.backgroundColor = cat.backColor;
-                  c.style.borderColor = cat.foreColor;
-                  if (cat.maxWait && seq.avgWait !== undefined) {
-                      c.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
-                  }
-                  else {
-                      throw new Error("Category is missing average width and maximum waiting times");
-                  }
-                  c.addEventListener("click", (e) => console.log("Not available"));
-                  cat.el = c;
-                  (_a = seq.el) === null || _a === void 0 ? void 0 : _a.appendChild(cat.el);
-              });
-          });
-          return this;
-      }
-      static random(exclude) {
-          const temp = [];
-          Category._categories.forEach(c => {
-              if (!exclude.includes(c.name)) {
-                  c.points = [];
-                  c.start = 0;
-                  c.end = 2359;
-                  temp.push(c);
-              }
-          });
-          const categoryCount = temp.length;
-          const index = randomInt(1, categoryCount) - 1;
-          const category = temp[index];
-          return category;
-      }
-  }
-  Category._categories = [
-      {
-          name: "Late Arrival (LAT)",
-          foreColor: "rgb(248, 80, 108)",
-          backColor: "rgb(248, 156, 171, 0.5)"
-      },
-      {
-          name: "Cancelled (CAN)",
-          foreColor: "rgb(228, 146, 39)",
-          backColor: "rgba(221, 170, 103, 0.5)"
-      },
-      {
-          name: "Waiting Height & Weight (WHW)",
-          foreColor: "rgb(41, 113, 247)",
-          backColor: "rgba(100, 149, 237, 0.5)"
-      },
-      {
-          name: "In consultation (ICO)",
-          foreColor: "rgb(81, 66, 167)",
-          backColor: "rgba(123, 104, 238, 0.5)"
-      },
-      {
-          name: "In blood room (IBR)",
-          foreColor: "rgb(247, 65, 44)",
-          backColor: "rgba(250, 128, 114, 0.5)"
-      },
-      {
-          name: "Did not attend (DNA)",
-          foreColor: "rgb(143, 63, 248)",
-          backColor: "rgba(139, 107, 180, 0.5)"
-      },
-      {
-          name: "Identified by kiosk (KIO)",
-          foreColor: "rgb(17, 141, 59)",
-          backColor: "rgba(17, 141, 59, 0.5)"
-      },
-      {
-          name: "Waiting for consulation (WCO)",
-          foreColor: "rgb(224, 148, 5)",
-          backColor: "rgba(245, 181, 61, 0.5)"
-      },
-      {
-          name: "Waiting for blood (WB)",
-          foreColor: "rgb(20, 105, 105)",
-          backColor: "rgba(20, 105, 105, 0.5)"
-      },
-      {
-          name: "Completed (COM)",
-          foreColor: "rgb(116, 170, 7)",
-          backColor: "rgba(154, 205, 50, 0.5)"
-      }
-  ];
 
   class DemoData {
       /**
@@ -127,6 +28,58 @@
        * @param {number} start - id index to begin at
        */
       constructor(start, options) {
+          this._categories = [
+              {
+                  name: "Late Arrival (LAT)",
+                  foreColor: "rgb(248, 80, 108)",
+                  backColor: "rgb(248, 156, 171, 0.5)"
+              },
+              {
+                  name: "Cancelled (CAN)",
+                  foreColor: "rgb(228, 146, 39)",
+                  backColor: "rgba(221, 170, 103, 0.5)"
+              },
+              {
+                  name: "Waiting Height & Weight (WHW)",
+                  foreColor: "rgb(41, 113, 247)",
+                  backColor: "rgba(100, 149, 237, 0.5)"
+              },
+              {
+                  name: "In consultation (ICO)",
+                  foreColor: "rgb(81, 66, 167)",
+                  backColor: "rgba(123, 104, 238, 0.5)"
+              },
+              {
+                  name: "In blood room (IBR)",
+                  foreColor: "rgb(247, 65, 44)",
+                  backColor: "rgba(250, 128, 114, 0.5)"
+              },
+              {
+                  name: "Did not attend (DNA)",
+                  foreColor: "rgb(143, 63, 248)",
+                  backColor: "rgba(139, 107, 180, 0.5)"
+              },
+              {
+                  name: "Identified by kiosk (KIO)",
+                  foreColor: "rgb(17, 141, 59)",
+                  backColor: "rgba(17, 141, 59, 0.5)"
+              },
+              {
+                  name: "Waiting for consulation (WCO)",
+                  foreColor: "rgb(224, 148, 5)",
+                  backColor: "rgba(245, 181, 61, 0.5)"
+              },
+              {
+                  name: "Waiting for blood (WB)",
+                  foreColor: "rgb(20, 105, 105)",
+                  backColor: "rgba(20, 105, 105, 0.5)"
+              },
+              {
+                  name: "Completed (COM)",
+                  foreColor: "rgb(116, 170, 7)",
+                  backColor: "rgba(154, 205, 50, 0.5)"
+              }
+          ];
           this.data = [];
           this.maximumPoints = 25;
           this._seqId = start;
@@ -136,21 +89,40 @@
               }
           }
       }
+      addRandomCategory(exclude) {
+          let i = randomInt(0, this._categories.length - 1);
+          let search = true;
+          while (search) {
+              if (exclude.length === 0 || !exclude.includes(this._categories[i].name)) {
+                  search = false;
+              }
+              else {
+                  i = randomInt(0, this._categories.length - 1);
+              }
+          }
+          this._categories[i].points = [];
+          let result = {};
+          Object.assign(result, this._categories[i]);
+          return result;
+      }
       addRandomSequence() {
-          const sequence = {
+          let sequence = {
               id: this._seqId++,
-              start: 0,
-              end: 2300,
+              start: randomTime(800, 1000),
+              end: randomTime(1700, 2000),
               categories: []
           };
-          const categoryCount = randomInt(1, 5);
-          const used = [];
+          let categoryCount = randomInt(1, 5);
+          let used = [];
           for (let n = 1; n <= categoryCount; n++) {
-              const category = Category.random(used);
+              let category = this.addRandomCategory(used);
               used.push(category.name);
-              const pointCount = randomInt(5, this.maximumPoints);
+              let pointCount = randomInt(5, this.maximumPoints);
               for (let n = 1; n <= pointCount; n++) {
-                  category.points.push(Point.random());
+                  category.points.push({
+                      time: randomTime(sequence.start, sequence.end),
+                      wait: randomInt(0, 60)
+                  });
               }
               sequence.categories.push(category);
           }
@@ -427,6 +399,81 @@
       }
   }
 
+  class Category {
+      constructor() {
+          this._data = [];
+      }
+      data(d) {
+          this._data = d;
+          return this;
+      }
+      draw() {
+          this._data.forEach((seq) => {
+              const w = Math.floor(100 / (seq.categories.length === 0 ? 1 : seq.categories.length));
+              seq.categories.forEach((cat) => {
+                  var _a;
+                  cat.el = document.createElement("div");
+                  cat.el.classList.add("category");
+                  cat.el.title = `${cat.name}\nMax waiting time (min): ${cat.maxWait}`;
+                  cat.el.style.backgroundColor = cat.backColor;
+                  cat.el.style.borderColor = cat.foreColor;
+                  if (cat.maxWait && seq.avgWait !== undefined) {
+                      cat.el.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
+                  }
+                  else {
+                      throw new Error("Category is missing average width and maximum waiting times");
+                  }
+                  cat.el.addEventListener("click", (e) => console.log("Not available"));
+                  (_a = seq.el) === null || _a === void 0 ? void 0 : _a.appendChild(cat.el);
+              });
+          });
+          return this;
+      }
+  }
+
+  class Point {
+      constructor() {
+          this._data = [];
+      }
+      data(d) {
+          this._data = d;
+          return this;
+      }
+      draw() {
+          this._data.forEach((seq) => {
+              seq.categories.forEach((cat) => {
+                  cat.points.forEach((pt) => {
+                      var _a;
+                      pt.el = document.createElement("div");
+                      pt.el.classList.add("pt");
+                      pt.el.style.backgroundColor = cat.foreColor;
+                      pt.el.style.borderColor = cat.foreColor;
+                      pt.el.title = `Appointment time: ${numberToTime(pt.time)}\nWaiting time (min): ${pt.wait}`;
+                      pt.el.addEventListener("click", e => {
+                          e.stopPropagation();
+                          window.dispatchEvent(new CustomEvent("point-touch", { detail: pt }));
+                      });
+                      (_a = cat.el) === null || _a === void 0 ? void 0 : _a.appendChild(pt.el);
+                      Point.updateXY(pt);
+                  });
+              });
+          });
+          return this;
+      }
+      static updateXY(point) {
+          var _a;
+          if (point && point.parent && point.el) {
+              const box = (_a = point.parent.el) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+              if (point.left !== undefined && point.top !== undefined) {
+                  point.el.style.transform = `translate(${(box.width - 7.5) * point.left}px, ${(box.height - 7.5) * point.top}px)`;
+              }
+              else {
+                  throw new Error("Point is missing top and left properties");
+              }
+          }
+      }
+  }
+
   var _a, _b, _c;
   const demo = new DemoData(1);
   demo.addRandomSequence()
@@ -445,6 +492,10 @@
       .draw(timeline);
   const categories = new Category();
   categories
+      .data(sequences.data())
+      .draw();
+  const points = new Point();
+  points
       .data(sequences.data())
       .draw();
   let activePoint; // which point is currently highlighted?
@@ -525,6 +576,14 @@
             });
           });*/
       }, 350);
+  }
+  const resizeObserver = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+          updatePoints();
+      }
+  });
+  if (timeline) {
+      resizeObserver.observe(timeline);
   }
   (_a = timeline) === null || _a === void 0 ? void 0 : _a.addEventListener("click", timelineclickHandler);
   (_b = btnViewLegend) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => legend.toggle());
