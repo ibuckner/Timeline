@@ -20,10 +20,12 @@ export type TCategory = {
   el?: HTMLElement,
   end: number,
   foreColor: string,
+  id?: number,
   maxWait?: number,
   name: string,
   parent?: TSequence,
   points: TPoint[],
+  relHeight?: number,
   start: number,
   stat?: TStat
 }

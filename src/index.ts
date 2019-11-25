@@ -6,7 +6,7 @@ import { Sequence } from "sequence";
 import { Category } from "category";
 import { Point } from "point";
 
-const demo: DemoData = new DemoData(1);
+const demo: DemoData = new DemoData();
 demo.addRandomSequence()
     .addRandomSequence()
     .addRandomSequence()
@@ -34,10 +34,18 @@ points
   .data(sequences.data())
   .draw();
 
-
-
-
-
+const btnViewLegend = document.getElementById("btnShowLegend");
+btnViewLegend?.addEventListener("click", () => legend.toggle());
+window.addEventListener("legend-visible", () => btnViewLegend?.classList.add("hidden"));
+window.addEventListener("legend-hidden", () => btnViewLegend?.classList.remove("hidden"));
+  
+const btnAddData = document.getElementById("btnAddData");
+btnAddData?.addEventListener("click", () => { 
+  demo.addRandomSequence().recalc();
+  sequences.data(demo.data).draw(timeline);
+  categories.data(sequences.data()).draw();
+  points.data(sequences.data()).draw();
+});
 
 
 
@@ -50,41 +58,8 @@ points
 
   
 
-
-
-
-let activePoint: TPoint | undefined; // which point is currently highlighted?
-let activeEvent: any;
 const objExplorer = document.querySelector(".object");
 
-const btnViewLegend = document.getElementById("btnShowLegend");
-const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
-let resizeTimer: any;
-
-// what happens when someone clicks on an category
-function eventClickHandler(e: Event, category: TCategory): void {
-  e.stopPropagation();
-  togglePointSelection(activePoint);
-  activePoint = undefined;
-  activeEvent = activeEvent === category ? undefined : category;
-  toggleObjectExplorer(activeEvent);
-  if (!legend.visible) {
-    legend.show();
-  }
-}
-
-// what happens when someone clicks anywhere in timeline
-function timelineclickHandler(_: Event): void {
-  togglePointSelection(activePoint);
-  activePoint = undefined;
-  toggleObjectExplorer();
-  if (legend.visible) {
-    legend.hide();
-  }
-}
-
-window.addEventListener("legend-visible", () => btnViewLegend?.classList.add("hidden"));
-window.addEventListener("legend-hidden", () => btnViewLegend?.classList.remove("hidden"));
 
 function togglePointSelection(point?: TPoint): void {
   if (point) {
@@ -145,20 +120,6 @@ function addQuantiles(category: TCategory): void {
   updateLinePointX(category);
 }
 
-function updatePoints() {
-  if (resizeTimer) {
-    clearTimeout(resizeTimer);
-  }
-  resizeTimer = setTimeout(() => {
-    /*data.forEach(s => {
-      s.categories.forEach(c => {
-        updateLinePointX(c);
-        c.points.forEach(pt => updatePointXY(pt, c));
-      });
-    });*/
-  }, 350);
-}
-
 function updateLinePointX(category: TCategory): void {
   if (category.el) {
     const box: ClientRect = category.el.getBoundingClientRect();
@@ -173,16 +134,5 @@ function updateLinePointX(category: TCategory): void {
   }
 }
 
-const resizeObserver = new ResizeObserver((entries) => {
-  for (let entry of entries) {
-    updatePoints();
-  }
-});
-if (timeline) {
-  resizeObserver.observe(timeline);
-}
-
-timeline?.addEventListener("click", timelineclickHandler);
-btnViewLegend?.addEventListener("click", () => legend.toggle());
-btnUpdateTimeline?.addEventListener("click", updateTimelineClickHandler);
-window.addEventListener("resize", updatePoints);
+// timeline?.addEventListener("click", timelineclickHandler);
+// window.addEventListener("resize", updatePoints);

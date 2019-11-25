@@ -41,28 +41,7 @@ h3 {
   justify-content: space-evenly;
 }
 
-.sequence {
-  align-items: stretch;
-  background-color: #ddd;
-  display: flex;
-  flex-direction: row;
-  min-height: 5vh;
-  max-height: 20vh;
-  margin: 1px;
-  padding: 2px;
-  transition: opacity 500ms ease-in-out;
-  width: calc(100% - 6px);
-}
-
 /* categories */
-
-.category {
-  border: 2px solid #fff;
-  display: inline-block;
-  margin-right: 10px;
-  position: relative;
-  transition: all 500ms ease-in-out;
-}
 
 .median {
   border-width: 1px;
@@ -74,32 +53,6 @@ h3 {
   transition: all 500ms ease-in-out; 
   width: 0;
   z-index: 400
-}
-
-/* Points */
-
-.pt { 
-  border-style: solid; 
-  border-width: 2px; 
-  border-radius: 50%; 
-  cursor: pointer; 
-  height: 2px; 
-  left: 1px; 
-  position: absolute; 
-  top: 0px;
-  transition: all 500ms ease-in-out; 
-  width: 1px; 
-  z-index: 500
-}
-
-.pt.highlight {
-  border-color: #f00 !important;
-  background-color: #f00 !important;
-}
-
-.pt:hover {
-  border-color: #f00 !important;
-  background-color: #f00 !important;
 }
 
 /* Object Explorer */

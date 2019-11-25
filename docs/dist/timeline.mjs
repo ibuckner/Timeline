@@ -24,7 +24,7 @@ class DemoData {
      * Initialise generator
      * @param {number} start - id index to begin at
      */
-    constructor(start, options) {
+    constructor(options) {
         this._categories = [
             {
                 name: "Late Arrival (LAT)",
@@ -79,7 +79,6 @@ class DemoData {
         ];
         this.data = [];
         this.maximumPoints = 25;
-        this._seqId = start;
         if (options) {
             if (options.maximumPoints !== undefined) {
                 this.maximumPoints = options.maximumPoints;
@@ -104,7 +103,7 @@ class DemoData {
     }
     addRandomSequence() {
         let sequence = {
-            id: this._seqId++,
+            id: this.data.length + 1,
             start: randomTime(800, 1000),
             end: randomTime(1700, 2000),
             categories: []
@@ -115,12 +114,16 @@ class DemoData {
             let category = this.addRandomCategory(used);
             used.push(category.name);
             let pointCount = randomInt(5, this.maximumPoints);
+            category.start = randomTime(sequence.start, sequence.start + 200);
+            category.end = randomTime(sequence.end - 200, sequence.end);
             for (let n = 1; n <= pointCount; n++) {
                 category.points.push({
-                    time: randomTime(sequence.start, sequence.end),
+                    id: category.points.length + 1,
+                    time: randomTime(category.start, category.end),
                     wait: randomInt(0, 60)
                 });
             }
+            category.id = sequence.categories.length + 1;
             sequence.categories.push(category);
         }
         this.data.push(sequence);
@@ -387,10 +390,13 @@ class Sequence {
         this._data.forEach(s => totalTimes += s.end - s.start);
         this._data.forEach(s => {
             s.relHeight = (s.end - s.start) / totalTimes;
-            s.el = document.createElement("div");
-            s.el.classList.add("sequence");
+            if (!s.el) {
+                s.el = document.createElement("div");
+                s.el.classList.add("sequence");
+                container.appendChild(s.el);
+            }
             s.el.style.height = `${s.relHeight * 100}%`;
-            container.appendChild(s.el);
+            s.el.title = `Start: ${numberToTime(s.start)} End: ${numberToTime(s.end)}`;
         });
         return this;
     }
@@ -409,19 +415,24 @@ class Category {
             const w = Math.floor(100 / (seq.categories.length === 0 ? 1 : seq.categories.length));
             seq.categories.forEach((cat) => {
                 var _a;
-                cat.el = document.createElement("div");
-                cat.el.classList.add("category");
-                cat.el.title = `${cat.name}\nMax waiting time (min): ${cat.maxWait}`;
+                if (!cat.el) {
+                    cat.el = document.createElement("div");
+                    cat.el.classList.add("category");
+                    cat.el.addEventListener("click", () => console.log("Not available"));
+                    (_a = seq.el) === null || _a === void 0 ? void 0 : _a.appendChild(cat.el);
+                }
+                cat.el.title = `${cat.name}\nOpening times: ${numberToTime(cat.start)}-${numberToTime(cat.end)}\nMax waiting time (min): ${cat.maxWait}`;
                 cat.el.style.backgroundColor = cat.backColor;
                 cat.el.style.borderColor = cat.foreColor;
+                cat.relHeight = (cat.end - cat.start) / (seq.end - seq.start);
+                cat.el.style.height = `${cat.relHeight * 100}%`;
+                cat.el.style.transform = `translate(0, ${100 - (cat.relHeight * 100)}%)`;
                 if (cat.maxWait && seq.avgWait !== undefined) {
                     cat.el.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
                 }
                 else {
                     throw new Error("Category is missing average width and maximum waiting times");
                 }
-                cat.el.addEventListener("click", (e) => console.log("Not available"));
-                (_a = seq.el) === null || _a === void 0 ? void 0 : _a.appendChild(cat.el);
             });
         });
         return this;
@@ -431,30 +442,43 @@ class Category {
 class Point {
     constructor() {
         this._data = [];
+        this._observer = new ResizeObserver((entries) => {
+            this._data.forEach((seq) => {
+                seq.categories.forEach((cat) => {
+                    cat.points.forEach((pt) => {
+                        Point.updateXY(pt);
+                    });
+                });
+            });
+        });
     }
     data(d) {
         this._data = d;
         return this;
     }
     draw() {
+        var _a;
         this._data.forEach((seq) => {
             seq.categories.forEach((cat) => {
                 cat.points.forEach((pt) => {
                     var _a;
-                    pt.el = document.createElement("div");
-                    pt.el.classList.add("pt");
+                    if (!pt.el) {
+                        pt.el = document.createElement("div");
+                        pt.el.classList.add("pt");
+                        pt.el.addEventListener("click", e => {
+                            e.stopPropagation();
+                            window.dispatchEvent(new CustomEvent("point-touch", { detail: pt }));
+                        });
+                        (_a = cat.el) === null || _a === void 0 ? void 0 : _a.appendChild(pt.el);
+                    }
                     pt.el.style.backgroundColor = cat.foreColor;
                     pt.el.style.borderColor = cat.foreColor;
                     pt.el.title = `Appointment time: ${numberToTime(pt.time)}\nWaiting time (min): ${pt.wait}`;
-                    pt.el.addEventListener("click", e => {
-                        e.stopPropagation();
-                        window.dispatchEvent(new CustomEvent("point-touch", { detail: pt }));
-                    });
-                    (_a = cat.el) === null || _a === void 0 ? void 0 : _a.appendChild(pt.el);
                     Point.updateXY(pt);
                 });
             });
         });
+        this._observer.observe((_a = this._data[0].el) === null || _a === void 0 ? void 0 : _a.parentNode);
         return this;
     }
     static updateXY(point) {
@@ -471,8 +495,8 @@ class Point {
     }
 }
 
-var _a, _b, _c;
-const demo = new DemoData(1);
+var _a, _b;
+const demo = new DemoData();
 demo.addRandomSequence()
     .addRandomSequence()
     .addRandomSequence()
@@ -495,94 +519,17 @@ const points = new Point();
 points
     .data(sequences.data())
     .draw();
-let activePoint; // which point is currently highlighted?
-const objExplorer = document.querySelector(".object");
 const btnViewLegend = document.getElementById("btnShowLegend");
-const btnUpdateTimeline = document.getElementById("btnUpdateTimeline");
-let resizeTimer;
-// what happens when someone clicks anywhere in timeline
-function timelineclickHandler(_) {
-    togglePointSelection(activePoint);
-    activePoint = undefined;
-    toggleObjectExplorer();
-    if (legend.visible) {
-        legend.hide();
-    }
-}
+(_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => legend.toggle());
 window.addEventListener("legend-visible", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.add("hidden"); });
 window.addEventListener("legend-hidden", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden"); });
-function togglePointSelection(point) {
-    var _a, _b;
-    if (point) {
-        if ((_a = point.el) === null || _a === void 0 ? void 0 : _a.classList.contains("highlight")) {
-            point.el.classList.remove("highlight");
-        }
-        else {
-            (_b = point.el) === null || _b === void 0 ? void 0 : _b.classList.add("highlight");
-        }
-    }
-}
-function toggleObjectExplorer(feature) {
-    var _a, _b, _c, _d, _e;
-    if (objExplorer) {
-        if (feature) {
-            objExplorer.classList.remove("hidden");
-            const heading = (_a = objExplorer) === null || _a === void 0 ? void 0 : _a.querySelector("h3");
-            if (feature.points) { // category clicked
-                if (heading) {
-                    heading.textContent = `${feature.name}`;
-                }
-                const content = objExplorer.querySelector(".content");
-                if (content && feature.parent) {
-                    content.innerHTML = `<div>The opening times are ${numberToTime((_b = feature.parent) === null || _b === void 0 ? void 0 : _b.start)} to ${numberToTime((_c = feature.parent) === null || _c === void 0 ? void 0 : _c.end)}</div>`;
-                }
-            }
-            else { // point clicked
-                const category = feature.parent;
-                if (category) {
-                    if (heading) {
-                        heading.textContent = `Appointment for ${category.name}`;
-                    }
-                    const content = objExplorer.querySelector(".content");
-                    if (content && category.parent) {
-                        content.innerHTML = `<div>The opening times are ${numberToTime((_d = category.parent) === null || _d === void 0 ? void 0 : _d.start)} to ${numberToTime((_e = category.parent) === null || _e === void 0 ? void 0 : _e.end)}</div>`;
-                        content.innerHTML += `<div>The appointment was scheduled at ${numberToTime(feature.time)} and the point waited approx. ${feature.wait} minute${feature.wait > 1 ? "s" : ""}.</div>`;
-                    }
-                }
-            }
-        }
-        else {
-            objExplorer.classList.add("hidden");
-        }
-    }
-}
-function updateTimelineClickHandler(e) {
-    const btn = e.target;
-    btn.classList.add("hidden");
-    setTimeout(() => btn.classList.remove("hidden"), 2000);
-}
-function updatePoints() {
-    if (resizeTimer) {
-        clearTimeout(resizeTimer);
-    }
-    resizeTimer = setTimeout(() => {
-        /*data.forEach(s => {
-          s.categories.forEach(c => {
-            updateLinePointX(c);
-            c.points.forEach(pt => updatePointXY(pt, c));
-          });
-        });*/
-    }, 350);
-}
-const resizeObserver = new ResizeObserver((entries) => {
-    for (let entry of entries) {
-        updatePoints();
-    }
+const btnAddData = document.getElementById("btnAddData");
+(_b = btnAddData) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
+    demo.addRandomSequence().recalc();
+    sequences.data(demo.data).draw(timeline);
+    categories.data(sequences.data()).draw();
+    points.data(sequences.data()).draw();
 });
-if (timeline) {
-    resizeObserver.observe(timeline);
-}
-(_a = timeline) === null || _a === void 0 ? void 0 : _a.addEventListener("click", timelineclickHandler);
-(_b = btnViewLegend) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => legend.toggle());
-(_c = btnUpdateTimeline) === null || _c === void 0 ? void 0 : _c.addEventListener("click", updateTimelineClickHandler);
-window.addEventListener("resize", updatePoints);
+const objExplorer = document.querySelector(".object");
+// timeline?.addEventListener("click", timelineclickHandler);
+// window.addEventListener("resize", updatePoints);

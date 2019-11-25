@@ -1,0 +1,13 @@
+.sequence {
+  align-items: stretch;
+  background-color: #ddd;
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  min-height: 5vh;
+  max-height: 20vh;
+  margin: 1px;
+  padding: 2px;
+  transition: opacity 500ms ease-in-out;
+  width: calc(100% - 6px);
+}

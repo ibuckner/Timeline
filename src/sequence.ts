@@ -1,10 +1,10 @@
 import { TSequence } from "./typings/timeline";
+import { numberToTime } from "./format";
 
 export class Sequence {
   private _data: TSequence[] = [];
-
+  
   constructor() {
-
   }
 
   public data(d?: TSequence[]): any {
@@ -20,10 +20,13 @@ export class Sequence {
     this._data.forEach(s => totalTimes += s.end - s.start);
     this._data.forEach(s => {
       s.relHeight = (s.end - s.start) / totalTimes;
-      s.el = document.createElement("div");
-      s.el.classList.add("sequence");
+      if (!s.el) {
+        s.el = document.createElement("div");
+        s.el.classList.add("sequence");
+        container.appendChild(s.el);
+      }
       s.el.style.height = `${s.relHeight * 100}%`;
-      container.appendChild(s.el);
+      s.el.title = `Start: ${numberToTime(s.start)} End: ${numberToTime(s.end)}`;
     });
     return this;
   }
