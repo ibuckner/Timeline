@@ -166,15 +166,6 @@ class DemoData {
     }
 }
 
-/**
- * Returns number as hh:mm
- * @param {number} value - number should conform to hhmm expectations
- */
-function numberToTime(value) {
-    let t = ("0" + value.toString()).slice(-4);
-    return t.slice(0, 2) + ":" + t.slice(-2);
-}
-
 class Slicer {
     constructor(list) {
         this._ = new Map();
@@ -374,6 +365,15 @@ class Legend {
     }
 }
 
+/**
+ * Returns number as hh:mm
+ * @param {number} value - number should conform to hhmm expectations
+ */
+function numberToTime(value) {
+    let t = ("0" + value.toString()).slice(-4);
+    return t.slice(0, 2) + ":" + t.slice(-2);
+}
+
 class Sequence {
     constructor() {
         this._data = [];
@@ -394,6 +394,9 @@ class Sequence {
                 s.el = document.createElement("div");
                 s.el.classList.add("sequence");
                 container.appendChild(s.el);
+                s.el.addEventListener("click", () => {
+                    window.dispatchEvent(new CustomEvent("sequence-touch", { detail: s }));
+                });
             }
             s.el.style.height = `${s.relHeight * 100}%`;
             s.el.title = `Start: ${numberToTime(s.start)} End: ${numberToTime(s.end)}`;
@@ -495,7 +498,7 @@ class Point {
     }
 }
 
-var _a, _b;
+var _a, _b, _c;
 const demo = new DemoData();
 demo.addRandomSequence()
     .addRandomSequence()
@@ -503,9 +506,7 @@ demo.addRandomSequence()
     .recalc();
 const container = document.querySelector(".container");
 const legend = new Legend(container);
-legend
-    .data(demo.data)
-    .draw();
+legend.data(demo.data).draw();
 const timeline = document.querySelector(".timeline");
 const sequences = new Sequence();
 sequences
@@ -530,6 +531,9 @@ const btnAddData = document.getElementById("btnAddData");
     categories.data(sequences.data()).draw();
     points.data(sequences.data()).draw();
 });
-const objExplorer = document.querySelector(".object");
+const objExplorer = document.getElementById("objExplorer");
+(_c = objExplorer) === null || _c === void 0 ? void 0 : _c.addEventListener("sequence-touch", () => {
+    objExplorer.classList.add("hidden");
+});
 // timeline?.addEventListener("click", timelineclickHandler);
 // window.addEventListener("resize", updatePoints);
