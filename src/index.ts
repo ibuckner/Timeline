@@ -1,6 +1,5 @@
 import { TCategory, TPoint } from "./typings/timeline";
 import { DemoData } from "./data";
-import { numberToTime } from "./format";
 import { Legend } from "./legend";
 import { Sequence } from "sequence";
 import { Category } from "category";
@@ -44,6 +43,7 @@ btnAddData?.addEventListener("click", () => {
   sequences.data(demo.data).draw(timeline);
   categories.data(sequences.data()).draw();
   points.data(sequences.data()).draw();
+  legend.data(demo.data).draw();
 });
 
 const objExplorer = document.getElementById("objExplorer");
@@ -89,4 +89,3 @@ function updateLinePointX(category: TCategory): void {
 }
 
 // timeline?.addEventListener("click", timelineclickHandler);
-// window.addEventListener("resize", updatePoints);

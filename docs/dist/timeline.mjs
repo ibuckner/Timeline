@@ -148,11 +148,9 @@ class DemoData {
                     if (c.maxWait !== undefined && pt.wait > c.maxWait) {
                         c.maxWait = pt.wait;
                     }
-                    pt.top = (pt.time - s.start) / (s.end - s.start);
                 });
                 c.points.forEach(pt => {
                     if (c.maxWait !== undefined) {
-                        pt.left = pt.wait / c.maxWait;
                         pt.parent = c;
                     }
                 });
@@ -427,9 +425,10 @@ class Category {
                 cat.el.title = `${cat.name}\nOpening times: ${numberToTime(cat.start)}-${numberToTime(cat.end)}\nMax waiting time (min): ${cat.maxWait}`;
                 cat.el.style.backgroundColor = cat.backColor;
                 cat.el.style.borderColor = cat.foreColor;
-                cat.relHeight = (cat.end - cat.start) / (seq.end - seq.start);
-                cat.el.style.height = `${cat.relHeight * 100}%`;
-                cat.el.style.transform = `translate(0, ${100 - (cat.relHeight * 100)}%)`;
+                const rel = (cat.end - cat.start) / (seq.end - seq.start);
+                cat.el.style.height = `${Math.floor(100 * rel)}%`;
+                const y = (cat.start - seq.start) / (seq.end - seq.start);
+                cat.el.style.transform = `translate(0, ${Math.floor(100 * y)}%)`;
                 if (cat.maxWait && seq.avgWait !== undefined) {
                     cat.el.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
                 }
@@ -488,11 +487,10 @@ class Point {
         var _a;
         if (point && point.parent && point.el) {
             const box = (_a = point.parent.el) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
-            if (point.left !== undefined && point.top !== undefined) {
-                point.el.style.transform = `translate(${(box.width - 7.5) * point.left}px, ${(box.height - 7.5) * point.top}px)`;
-            }
-            else {
-                throw new Error("Point is missing top and left properties");
+            if (point.parent && point.parent.maxWait) {
+                const x = point.wait / point.parent.maxWait;
+                const y = (point.time - point.parent.start) / (point.parent.end - point.parent.start);
+                point.el.style.transform = `translate(${(box.width - 7.5) * x}px, ${(box.height - 7.5) * y}px)`;
             }
         }
     }
@@ -530,10 +528,10 @@ const btnAddData = document.getElementById("btnAddData");
     sequences.data(demo.data).draw(timeline);
     categories.data(sequences.data()).draw();
     points.data(sequences.data()).draw();
+    legend.data(demo.data).draw();
 });
 const objExplorer = document.getElementById("objExplorer");
 (_c = objExplorer) === null || _c === void 0 ? void 0 : _c.addEventListener("sequence-touch", () => {
     objExplorer.classList.add("hidden");
 });
 // timeline?.addEventListener("click", timelineclickHandler);
-// window.addEventListener("resize", updatePoints);

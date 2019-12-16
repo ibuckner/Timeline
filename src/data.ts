@@ -139,12 +139,10 @@ export class DemoData {
           if (c.maxWait !== undefined && pt.wait > c.maxWait) {
             c.maxWait = pt.wait;
           }
-          pt.top = (pt.time - s.start) / (s.end - s.start);
         });
   
         c.points.forEach(pt => {
           if (c.maxWait !== undefined) {
-            pt.left = pt.wait / c.maxWait;
             pt.parent = c;
           }
         });

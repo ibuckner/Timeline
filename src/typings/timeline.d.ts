@@ -1,10 +1,8 @@
 export type TPoint = {
   el?: HTMLElement,
   id?: number,
-  left?: number,
   parent?: TCategory,
   time: number,
-  top?: number,
   wait: number
 }
 
@@ -25,7 +23,6 @@ export type TCategory = {
   name: string,
   parent?: TSequence,
   points: TPoint[],
-  relHeight?: number,
   start: number,
   stat?: TStat
 }

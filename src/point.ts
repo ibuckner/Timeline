@@ -48,11 +48,11 @@ export class Point {
 
   public static updateXY(point: TPoint): void {
     if (point && point.parent && point.el) {
-      const box: DOMRect = point.parent.el?.getBoundingClientRect() as DOMRect;  
-      if (point.left !== undefined && point.top !== undefined) {
-        point.el.style.transform = `translate(${(box.width - 7.5) * point.left}px, ${(box.height - 7.5) * point.top}px)`;
-      } else {
-        throw new Error("Point is missing top and left properties");
+      const box: DOMRect = point.parent.el?.getBoundingClientRect() as DOMRect;
+      if (point.parent && point.parent.maxWait) {
+        const x: number = point.wait / point.parent.maxWait;
+        const y: number = (point.time - point.parent.start) / (point.parent.end - point.parent.start);
+        point.el.style.transform = `translate(${(box.width - 7.5) * x}px, ${(box.height - 7.5) * y}px)`;
       }
     }
   }

@@ -25,9 +25,13 @@ export class Category {
         cat.el.title = `${cat.name}\nOpening times: ${numberToTime(cat.start)}-${numberToTime(cat.end)}\nMax waiting time (min): ${cat.maxWait}`;
         cat.el.style.backgroundColor = cat.backColor;
         cat.el.style.borderColor = cat.foreColor;
-        cat.relHeight = (cat.end - cat.start) / (seq.end - seq.start);
-        cat.el.style.height = `${cat.relHeight * 100}%`;
-        cat.el.style.transform = `translate(0, ${100 - (cat.relHeight * 100)}%)`;
+        
+        const rel: number = (cat.end - cat.start) / (seq.end - seq.start);
+        cat.el.style.height = `${Math.floor(100 * rel)}%`;
+        
+        const y: number = (cat.start - seq.start) / (seq.end - seq.start);
+        cat.el.style.transform = `translate(0, ${Math.floor(100 * y)}%)`;
+        
         if (cat.maxWait && seq.avgWait !== undefined) {
           cat.el.style.flexBasis = `${w * (cat.maxWait / seq.avgWait)}%`;
         } else {
