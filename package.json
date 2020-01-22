@@ -25,25 +25,25 @@
     "test.compile": "jest --config jestconfig.json"
   },
   "dependencies": {
-    "@buckneri/js-lib-random": "^0.1.2",
-    "@buckneri/js-lib-slicer": "0.0.2",
+    "@buckneri/js-lib-random": "^0.1.3",
+    "@buckneri/js-lib-slicer": "0.0.3",
     "d3-array": "^2.4.0"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
-    "@types/jest": "^24.0.25",
+    "@types/jest": "^24.9.0",
     "@typescript-eslint/eslint-plugin": "^2.17.0",
     "@typescript-eslint/parser": "^2.17.0",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^20.3.1",
-    "jest": "^24.9.0",
+    "jest": "^25.1.0",
     "jsdoc": "^3.6.3",
-    "rollup": "^1.29.0",
+    "rollup": "^1.29.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "ts-jest": "^24.3.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.5"
   },
   "main": "rollup.config.js"
 }

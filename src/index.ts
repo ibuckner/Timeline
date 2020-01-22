@@ -1,6 +1,7 @@
-import { TCategory, TPoint } from "./typings/timeline";
+import { TSequence, TCategory, TPoint } from "./typings/timeline";
 import { DemoData } from "./data";
 import { Legend } from "./legend";
+import { Inspector } from "./inspector";
 import { Sequence } from "sequence";
 import { Category } from "category";
 import { Point } from "point";
@@ -15,52 +16,78 @@ const container = document.querySelector(".container") as HTMLElement;
 const legend: Legend = new Legend(container);
 legend.data(demo.data).draw();
 
+const inspector: Inspector = new Inspector(container);
+
 const timeline = document.querySelector(".timeline") as HTMLElement;
 
-const sequences: Sequence = new Sequence();
-sequences
-  .data(demo.data)
-  .draw(timeline);
-
-const categories: Category = new Category();
-categories
-  .data(sequences.data())
-  .draw();
-
-const points: Point = new Point();
-points
-  .data(sequences.data())
-  .draw();
+let sequences: Sequence[] = linkData(demo.data);
+drawSequences(sequences, timeline);
 
 const btnViewLegend = document.getElementById("btnShowLegend");
 btnViewLegend?.addEventListener("click", () => legend.toggle());
 window.addEventListener("legend-visible", () => btnViewLegend?.classList.add("hidden"));
 window.addEventListener("legend-hidden", () => btnViewLegend?.classList.remove("hidden"));
-  
+
+window.addEventListener("point-select", (event: any) => {
+  const el = event.detail.el as HTMLElement;
+  if (el) {
+    Array.from(document.querySelectorAll(".pt.highlight")).forEach(el => {
+      el.classList.remove("highlight");
+    });  
+    el.classList.add("highlight");
+  }  
+});
+ 
 const btnAddData = document.getElementById("btnAddData");
 btnAddData?.addEventListener("click", () => { 
   demo.addRandomSequence().recalc();
-  sequences.data(demo.data).draw(timeline);
-  categories.data(sequences.data()).draw();
-  points.data(sequences.data()).draw();
-  legend.data(demo.data).draw();
+  sequences = linkData(demo.data, sequences);
+  drawSequences(sequences, timeline);  
 });
 
-const objExplorer = document.getElementById("objExplorer");
-objExplorer?.addEventListener("sequence-touch", () => {
-  objExplorer.classList.add("hidden");
-});
-
-
-
-function togglePointSelection(point?: TPoint): void {
-  if (point) {
-    if (point.el?.classList.contains("highlight")) {
-      point.el.classList.remove("highlight");
-    } else {
-      point.el?.classList.add("highlight");
-    }
+/**
+ * Iterates over demo data and updates the sequences array
+ * @param data - data array
+ * @param sequences - array of Sequence objects
+ */
+function linkData(data: TSequence[], sequences?: Sequence[] | undefined): Sequence[] {
+  if (sequences === undefined) {
+    sequences = [];
   }
+  data.forEach((seq, n) => {
+    if (!seq.el) {
+      let s = new Sequence({ maximumTime: demo.maximumTime });
+      s.data(seq);
+      sequences?.push(s);
+    } else {
+      if (sequences && sequences[n]) {
+        sequences[n]?.data(seq);
+      }
+    }
+  });
+  return sequences;
+}
+
+/**
+ * Re/draws the DOM elements
+ * @param sequences - array of sequences
+ * @param container - parent element of graphic
+ */
+function drawSequences(sequences: Sequence[], container: HTMLElement): void {
+  sequences.forEach((seq: Sequence) => { seq.draw(container); });
+  sequences.forEach((seq: Sequence) => {
+    const d = seq.data();
+    const nc: number = d.categories.length;
+    d.categories.forEach((cat: TCategory) => {
+      const c = new Category({ neighborCount: nc });
+      c.data(cat).draw(d.el);
+      const cd = c.data();
+      cd.points.forEach((pt: TPoint) => {
+        const p = new Point();
+        p.data(pt).draw(cd.el);
+      });
+    });
+  });
 }
 
 function addQuantiles(category: TCategory): void {
@@ -74,6 +101,10 @@ function addQuantiles(category: TCategory): void {
   updateLinePointX(category);
 }
 
+/**
+ * Updates the Point's xy position
+ * @param category - category data structure 
+ */
 function updateLinePointX(category: TCategory): void {
   if (category.el) {
     const box: ClientRect = category.el.getBoundingClientRect();
@@ -87,5 +118,3 @@ function updateLinePointX(category: TCategory): void {
     throw new Error("Category is missing UI element");
   }
 }
-
-// timeline?.addEventListener("click", timelineclickHandler);

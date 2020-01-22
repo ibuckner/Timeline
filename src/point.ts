@@ -1,29 +1,33 @@
-import { TSequence, TCategory, TPoint } from "./typings/timeline";
+import { TPoint } from "./typings/timeline";
 import { numberToTime } from "./format";
 
 /**
  * Points are individual data items occuring within categories
  */
 export class Point {
-  private _data: TSequence[] = [];
+  private _data: TPoint = { time: 0, wait: 0 };
   private _observer: ResizeObserver;
 
   /**
    * Watch for view size changes and re-align points if needed
    */
   constructor() {
-    this._observer = new ResizeObserver((entries) => {
-      this._data.forEach((seq: TSequence) => {
-        seq.categories.forEach((cat: TCategory) => {
-          cat.points.forEach((pt: TPoint) => {
-            Point.updateXY(pt);
-          });
-        });
-      });
+    this._observer = new ResizeObserver(() => Point.updateXY(this._data));
+
+    window.addEventListener("category-select", () => {
+      if (this._data?.el?.classList.contains("highlight")) {
+        this._data?.el?.classList.remove("highlight");
+      } 
+    });
+
+    window.addEventListener("sequence-select", () => {
+      if (this._data?.el?.classList.contains("highlight")) {
+        this._data?.el?.classList.remove("highlight");
+      } 
     });
   }
 
-  public data(d: TSequence[]): any {
+  public data(d?: TPoint): any {
     if (d) {
       this._data = d;
       return this;
@@ -33,28 +37,28 @@ export class Point {
 
   /**
    * Once drawn, each point item holds the DOM object connected to it
+   * @param container 
    */
-  public draw(): Point {
-    this._data.forEach((seq: TSequence) => {
-      seq.categories.forEach((cat: TCategory) => {
-        cat.points.forEach((pt: TPoint) => {
-          if (!pt.el) {
-            pt.el = document.createElement("div");
-            pt.el.classList.add("pt");
-            pt.el.addEventListener("click", e => {
-              e.stopPropagation();
-              window.dispatchEvent(new CustomEvent("point-touch", { detail: pt }));
-            });
-            cat.el?.appendChild(pt.el);
-          }
-          pt.el.style.backgroundColor = cat.foreColor;
-          pt.el.style.borderColor = cat.foreColor;
-          pt.el.title = `Appointment time: ${numberToTime(pt.time)}\nWaiting time (min): ${pt.wait}`;
-          Point.updateXY(pt);
-        });
+  public draw(container: HTMLElement): Point {
+    if (!this._data.el) {
+      this._data.el = document.createElement("div");
+      this._data.el.classList.add("pt");
+      this._data.el.addEventListener("click", e => {
+        e.stopPropagation();
+        const eventName: string = this._data?.el?.classList.contains("highlight") ? "point-unselect" : "point-select";
+        if (eventName === "point-unselect") {
+          this._data?.el?.classList.remove("highlight");
+        }
+        dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
       });
-    });
-    this._observer.observe(this._data[0].el?.parentNode as HTMLElement);
+      container.appendChild(this._data.el);
+    }
+    this._data.el.style.backgroundColor = container.style.backgroundColor;
+    this._data.el.style.borderColor = container.style.borderColor;
+    this._data.el.title = `Appointment time: ${numberToTime(this._data.time)}\nWaiting time (min): ${this._data.wait}`;
+    Point.updateXY(this._data);
+ 
+    this._observer.observe(this._data.el?.parentNode as HTMLElement);
     return this;
   }
 

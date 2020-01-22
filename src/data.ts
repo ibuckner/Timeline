@@ -1,5 +1,5 @@
 import { ascending, deviation, median, quantile } from "d3-array";
-import { TSequence, TCategory } from "./typings/timeline";
+import { TSequence, TCategory, TPoint } from "./typings/timeline";
 import { randomInt, randomTimeInt } from "@buckneri/js-lib-random";
 
 export class DemoData {
@@ -58,6 +58,7 @@ export class DemoData {
 
   public data: TSequence[] = [];
   public maximumPoints: number = 25;
+  public maximumTime: number = 0;
 
   /**
    * Initialise generator
@@ -103,23 +104,37 @@ export class DemoData {
       used.push(category.name);
       let pointCount: number = randomInt(5, this.maximumPoints);
       category.start = randomTimeInt(sequence.start, sequence.start + 200, 30);
+      if (category.start < sequence.start) {
+        throw Error("A category cannot start earlier than its sequence");
+      }
       category.end = randomTimeInt(sequence.end - 200, sequence.end, 30);
+      if (category.end > sequence.end) {
+        throw Error("A category cannot end later than its sequence");
+      }
       for (let n = 1; n <= pointCount; n++) {
-        category.points.push({
+        const pt: TPoint = {
           id: category.points.length + 1,
           time: randomTimeInt(category.start, category.end, 10),
           wait: randomInt(0, 60)
-        });
+        };
+        if (pt.time < category.start || pt.time > category.end) {
+          throw Error("A point cannot start earlier or end later than its category");
+        }
+        category.points.push(pt);
       }
       category.id = sequence.categories.length + 1;
       sequence.categories.push(category);
     }
 
     this.data.push(sequence);
+    this.maximumTime = 0;
+    this.data.forEach(s => this.maximumTime += s.end - s.start);
     return this;
   }
 
   public recalc(): DemoData {
+    this.maximumTime = 0;
+    this.data.forEach(s => this.maximumTime += s.end - s.start);
     this.data.forEach(s => {
       let waits: number[] = [];
       s.categories.forEach((c: TCategory) => {
