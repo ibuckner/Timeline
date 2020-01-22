@@ -1,27 +1,39 @@
 import { TSequence, TCategory, TPoint } from "./typings/timeline";
 import { numberToTime } from "./format";
 
+/**
+ * Points are individual data items occuring within categories
+ */
 export class Point {
   private _data: TSequence[] = [];
   private _observer: ResizeObserver;
 
+  /**
+   * Watch for view size changes and re-align points if needed
+   */
   constructor() {
     this._observer = new ResizeObserver((entries) => {
       this._data.forEach((seq: TSequence) => {
         seq.categories.forEach((cat: TCategory) => {
           cat.points.forEach((pt: TPoint) => {
             Point.updateXY(pt);
-          })
+          });
         });
       });
     });
   }
 
-  public data(d: TSequence[]): Point {
-    this._data = d;
-    return this;
+  public data(d: TSequence[]): any {
+    if (d) {
+      this._data = d;
+      return this;
+    }
+    return this._data;
   }
 
+  /**
+   * Once drawn, each point item holds the DOM object connected to it
+   */
   public draw(): Point {
     this._data.forEach((seq: TSequence) => {
       seq.categories.forEach((cat: TCategory) => {
@@ -39,13 +51,17 @@ export class Point {
           pt.el.style.borderColor = cat.foreColor;
           pt.el.title = `Appointment time: ${numberToTime(pt.time)}\nWaiting time (min): ${pt.wait}`;
           Point.updateXY(pt);
-        })
+        });
       });
     });
     this._observer.observe(this._data[0].el?.parentNode as HTMLElement);
     return this;
   }
 
+  /**
+   * Adjusts point positions in view
+   * @param point - Point to set view position 
+   */
   public static updateXY(point: TPoint): void {
     if (point && point.parent && point.el) {
       const box: DOMRect = point.parent.el?.getBoundingClientRect() as DOMRect;

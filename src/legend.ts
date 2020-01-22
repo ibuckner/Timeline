@@ -57,7 +57,7 @@ export class Legend {
 
   /**
    * Populates the legend with categories
-   * @param {TSequence[]} data - list of categories
+   * @param data - list of categories
    */
   public data(data: TSequence[]): Legend {
     const labels: string[] = [];

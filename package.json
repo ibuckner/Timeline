@@ -18,25 +18,32 @@
   },
   "scripts": {
     "build": "rollup -cw",
+    "eslint": "eslint -c .eslintrc.json --ext .ts --ext .js ./src",
     "https": "http-server ./docs -a localhost -p 5000 -o",
     "http": "http-server ./docs -a localhost -p 5000 -o --ssl --key private/key.pem --cert private/cert.pem",
     "test": "npm run https",
     "test.compile": "jest --config jestconfig.json"
   },
   "dependencies": {
+    "@buckneri/js-lib-random": "^0.1.2",
     "@buckneri/js-lib-slicer": "0.0.2",
     "d3-array": "^2.4.0"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
-    "@types/jest": "^24.0.23",
+    "@types/jest": "^24.0.25",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-jsdoc": "^20.3.1",
     "jest": "^24.9.0",
-    "rollup": "^1.27.13",
+    "jsdoc": "^3.6.3",
+    "rollup": "^1.29.0",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
-    "ts-jest": "^24.2.0",
-    "typescript": "^3.7.3"
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.4"
   },
   "main": "rollup.config.js"
 }

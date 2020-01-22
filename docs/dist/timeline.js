@@ -8,12 +8,16 @@
   function randomInt(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
   }
-  function randomTime(min, max, round) {
+  function randomTimeInt(min, max, round) {
       let t = Math.floor(Math.random() * (max - min + 1) + min);
       let hh = Math.floor(t / 100), mm = t % 100;
       if (mm > 59) {
           mm = 100 - mm;
           ++hh;
+      }
+      mm = roundNearest(mm, round);
+      if (mm > 59) {
+          mm = 0;
       }
       if (hh > 23) {
           hh = 0;
@@ -21,11 +25,14 @@
       t = hh * 100 + mm;
       return t > max ? max : t;
   }
+  function roundNearest(value, round) {
+      return Math.ceil((value + 1) / round) * round;
+  }
 
   class DemoData {
       /**
        * Initialise generator
-       * @param {number} start - id index to begin at
+       * @param start - id index to begin at
        */
       constructor(options) {
           this._categories = [
@@ -107,8 +114,8 @@
       addRandomSequence() {
           let sequence = {
               id: this.data.length + 1,
-              start: randomTime(800, 1000),
-              end: randomTime(1700, 2000),
+              start: randomTimeInt(800, 1000, 30),
+              end: randomTimeInt(1700, 2000, 30),
               categories: []
           };
           let categoryCount = randomInt(1, 5);
@@ -117,12 +124,12 @@
               let category = this.addRandomCategory(used);
               used.push(category.name);
               let pointCount = randomInt(5, this.maximumPoints);
-              category.start = randomTime(sequence.start, sequence.start + 200);
-              category.end = randomTime(sequence.end - 200, sequence.end);
+              category.start = randomTimeInt(sequence.start, sequence.start + 200, 30);
+              category.end = randomTimeInt(sequence.end - 200, sequence.end, 30);
               for (let n = 1; n <= pointCount; n++) {
                   category.points.push({
                       id: category.points.length + 1,
-                      time: randomTime(category.start, category.end),
+                      time: randomTimeInt(category.start, category.end, 10),
                       wait: randomInt(0, 60)
                   });
               }
@@ -277,7 +284,7 @@
       }
       /**
        * Populates the legend with categories
-       * @param {TSequence[]} data - list of categories
+       * @param data - list of categories
        */
       data(data) {
           const labels = [];
@@ -368,13 +375,16 @@
 
   /**
    * Returns number as hh:mm
-   * @param {number} value - number should conform to hhmm expectations
+   * @param value - number should conform to hhmm expectations
    */
   function numberToTime(value) {
       let t = ("0" + value.toString()).slice(-4);
       return t.slice(0, 2) + ":" + t.slice(-2);
   }
 
+  /**
+   * Sequences are collections of activity, spanning across the view for a given time frame
+   */
   class Sequence {
       constructor() {
           this._data = [];
@@ -386,6 +396,10 @@
           }
           return this._data;
       }
+      /**
+       * Once drawn, each sequence item holds the DOM object connected to it
+       * @param container
+       */
       draw(container) {
           let totalTimes = 0;
           this._data.forEach(s => totalTimes += s.end - s.start);
@@ -444,7 +458,13 @@
       }
   }
 
+  /**
+   * Points are individual data items occuring within categories
+   */
   class Point {
+      /**
+       * Watch for view size changes and re-align points if needed
+       */
       constructor() {
           this._data = [];
           this._observer = new ResizeObserver((entries) => {
@@ -458,9 +478,15 @@
           });
       }
       data(d) {
-          this._data = d;
-          return this;
+          if (d) {
+              this._data = d;
+              return this;
+          }
+          return this._data;
       }
+      /**
+       * Once drawn, each point item holds the DOM object connected to it
+       */
       draw() {
           var _a;
           this._data.forEach((seq) => {
@@ -486,6 +512,10 @@
           this._observer.observe((_a = this._data[0].el) === null || _a === void 0 ? void 0 : _a.parentNode);
           return this;
       }
+      /**
+       * Adjusts point positions in view
+       * @param point - Point to set view position
+       */
       static updateXY(point) {
           var _a;
           if (point && point.parent && point.el) {

@@ -49,7 +49,7 @@ btnAddData?.addEventListener("click", () => {
 const objExplorer = document.getElementById("objExplorer");
 objExplorer?.addEventListener("sequence-touch", () => {
   objExplorer.classList.add("hidden");
-})
+});
 
 
 

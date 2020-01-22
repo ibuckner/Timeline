@@ -1,6 +1,6 @@
 import { ascending, deviation, median, quantile } from "d3-array";
 import { TSequence, TCategory } from "./typings/timeline";
-import { randomInt, randomTime } from "./random";
+import { randomInt, randomTimeInt } from "@buckneri/js-lib-random";
 
 export class DemoData {
   private _categories: any[] = [
@@ -61,7 +61,7 @@ export class DemoData {
 
   /**
    * Initialise generator
-   * @param {number} start - id index to begin at
+   * @param start - id index to begin at
    */
   constructor(options?: any) {
     if (options) {
@@ -90,8 +90,8 @@ export class DemoData {
   public addRandomSequence(): DemoData {
     let sequence: TSequence = {
       id: this.data.length + 1,
-      start: randomTime(800, 1000, 30),
-      end: randomTime(1700, 2000, 30),
+      start: randomTimeInt(800, 1000, 30),
+      end: randomTimeInt(1700, 2000, 30),
       categories: []
     };
 
@@ -102,16 +102,16 @@ export class DemoData {
       let category: TCategory = this.addRandomCategory(used);
       used.push(category.name);
       let pointCount: number = randomInt(5, this.maximumPoints);
-      category.start = randomTime(sequence.start, sequence.start + 200, 30);
-      category.end = randomTime(sequence.end - 200, sequence.end, 30);
+      category.start = randomTimeInt(sequence.start, sequence.start + 200, 30);
+      category.end = randomTimeInt(sequence.end - 200, sequence.end, 30);
       for (let n = 1; n <= pointCount; n++) {
         category.points.push({
           id: category.points.length + 1,
-          time: randomTime(category.start, category.end, 10),
+          time: randomTimeInt(category.start, category.end, 10),
           wait: randomInt(0, 60)
         });
       }
-      category.id = sequence.categories.length + 1
+      category.id = sequence.categories.length + 1;
       sequence.categories.push(category);
     }
 

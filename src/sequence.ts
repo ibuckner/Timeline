@@ -1,6 +1,9 @@
 import { TSequence } from "./typings/timeline";
 import { numberToTime } from "./format";
 
+/**
+ * Sequences are collections of activity, spanning across the view for a given time frame
+ */
 export class Sequence {
   private _data: TSequence[] = [];
   
@@ -15,6 +18,10 @@ export class Sequence {
     return this._data;
   }
 
+  /**
+   * Once drawn, each sequence item holds the DOM object connected to it
+   * @param container 
+   */
   public draw(container: HTMLElement): Sequence {
     let totalTimes: number = 0;
     this._data.forEach(s => totalTimes += s.end - s.start);

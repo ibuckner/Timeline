@@ -4,14 +4,14 @@ export type TPoint = {
   parent?: TCategory,
   time: number,
   wait: number
-}
+};
 
 export type TLegendItem = {
   backColor: string,
   el?: HTMLElement,
   foreColor: string,
   name: string
-}
+};
 
 export type TCategory = {
   backColor: string,
@@ -25,7 +25,7 @@ export type TCategory = {
   points: TPoint[],
   start: number,
   stat?: TStat
-}
+};
 
 export type TSequence = {
   avgWait?: number,
@@ -35,7 +35,7 @@ export type TSequence = {
   id?: number,
   relHeight?: number,
   start: number
-}
+};
 
 export type TStat = {
   median?: number,
@@ -43,4 +43,4 @@ export type TStat = {
   q50?: number,
   q75?: number,
   std?: number
-}
+};
