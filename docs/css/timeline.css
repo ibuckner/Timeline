@@ -13,6 +13,7 @@ h3 {
 }
 
 .hidden { opacity: 0 !important }
+.filtered { opacity: 0.15 }
 
 .container {
   background-color: #fff;
@@ -39,6 +40,11 @@ h3 {
   flex-direction: column;
   flex-grow: 8;
   justify-content: space-evenly;
+}
+
+.disabled {
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* categories */

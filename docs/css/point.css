@@ -12,8 +12,6 @@
   z-index: 500
 }
 
-.pt.fade { opacity: 0.2 }
-
 .pt.highlight { border-width: 4px }
 
 .pt:hover { border-width: 4px }

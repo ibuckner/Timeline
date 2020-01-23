@@ -304,12 +304,12 @@ class Legend {
         Array.from(this.element.querySelectorAll(".filtered"))
             .forEach(el => el.classList.remove("filtered"));
         this.btnFilter.classList.add("hidden");
-        window.dispatchEvent(new CustomEvent("legend-filter", { detail: [] }));
+        window.dispatchEvent(new CustomEvent("legend-filter-clear", { detail: [] }));
         return this;
     }
     /**
      * Populates the legend with categories
-     * @param data - list of categories
+     * @param data - list of sequences
      */
     data(data) {
         const labels = [];
@@ -363,7 +363,8 @@ class Legend {
                 (_d = (_c = item) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("filtered");
             }
         });
-        window.dispatchEvent(new CustomEvent("legend-filter", { detail: selectionList }));
+        const eventName = (selectionList.length === 0) ? "legend-filter-clear" : "legend-filter";
+        window.dispatchEvent(new CustomEvent(eventName, { detail: selectionList }));
     }
     /**
      * Hide legend
@@ -548,6 +549,7 @@ class Category {
             this._data.el = document.createElement("div");
             this._data.el.classList.add("category");
             this._data.el.addEventListener("click", () => console.log("Not available"));
+            this._data.el.dataset.category = this._data.name;
             container.appendChild(this._data.el);
         }
         this._data.el.title = `${this._data.name}\nOpening times: ${numberToTime(this._data.start)}-${numberToTime(this._data.end)}\nMax waiting time (min): ${this._data.maxWait}`;
@@ -669,6 +671,39 @@ const btnViewLegend = document.getElementById("btnShowLegend");
 (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => legend.toggle());
 window.addEventListener("legend-visible", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.add("hidden"); });
 window.addEventListener("legend-hidden", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden"); });
+window.addEventListener("legend-filter-clear", () => {
+    Array.from(document.querySelectorAll(".category.disabled"))
+        .forEach(e => e.classList.remove("disabled", "filtered"));
+});
+window.addEventListener("legend-filter", (event) => {
+    const list = event.detail;
+    if (list.length > 1) {
+        Array.from(document.querySelectorAll(".category"))
+            .forEach(e => e.classList.add("disabled", "filtered"));
+        list.forEach((item) => {
+            Array.from(document.querySelectorAll(".category"))
+                .forEach((e) => {
+                const c = e.dataset.category || "";
+                if (c === item) {
+                    e.classList.remove("disabled", "filtered");
+                }
+            });
+        });
+    }
+    else {
+        Array.from(document.querySelectorAll(".category.disabled"))
+            .forEach(e => e.classList.remove("disabled", "filtered"));
+        list.forEach((item) => {
+            Array.from(document.querySelectorAll(".category"))
+                .forEach((e) => {
+                const c = e.dataset.category || "";
+                if (c !== item) {
+                    e.classList.add("disabled", "filtered");
+                }
+            });
+        });
+    }
+});
 window.addEventListener("point-select", (event) => {
     const el = event.detail.el;
     if (el) {

@@ -57,5 +57,3 @@
   transition: width 500ms ease-in-out;
   user-select: none
 }
-
-.legend-item.filtered { opacity: 0.3 }

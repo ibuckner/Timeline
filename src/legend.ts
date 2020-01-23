@@ -1,6 +1,5 @@
 import { TSequence, TCategory, TLegendItem } from "./typings/timeline";
 import { Slicer } from "@buckneri/js-lib-slicer";
-
 export class Legend {
   public btnClose: HTMLElement;
   public btnFilter: HTMLElement;
@@ -51,13 +50,13 @@ export class Legend {
     Array.from(this.element.querySelectorAll(".filtered"))
       .forEach(el => el.classList.remove("filtered"));
     this.btnFilter.classList.add("hidden");
-    window.dispatchEvent(new CustomEvent("legend-filter", { detail: [] }));
+    window.dispatchEvent(new CustomEvent("legend-filter-clear", { detail: [] }));
     return this;
   }
 
   /**
    * Populates the legend with categories
-   * @param data - list of categories
+   * @param data - list of sequences
    */
   public data(data: TSequence[]): Legend {
     const labels: string[] = [];
@@ -113,8 +112,9 @@ export class Legend {
         item?.el?.classList.remove("filtered");
       }
     });
-        
-    window.dispatchEvent(new CustomEvent("legend-filter", { detail: selectionList }));
+
+    const eventName: string = (selectionList.length === 0) ? "legend-filter-clear" : "legend-filter";
+    window.dispatchEvent(new CustomEvent(eventName, { detail: selectionList }));
   }
 
   /**

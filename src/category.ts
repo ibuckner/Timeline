@@ -29,6 +29,7 @@ export class Category {
       this._data.el = document.createElement("div");
       this._data.el.classList.add("category");
       this._data.el.addEventListener("click", () => console.log("Not available"));
+      this._data.el.dataset.category = this._data.name;
       container.appendChild(this._data.el);
     }
     this._data.el.title = `${this._data.name}\nOpening times: ${numberToTime(this._data.start)}-${numberToTime(this._data.end)}\nMax waiting time (min): ${this._data.maxWait}`;

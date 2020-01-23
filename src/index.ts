@@ -25,8 +25,45 @@ drawSequences(sequences, timeline);
 
 const btnViewLegend = document.getElementById("btnShowLegend");
 btnViewLegend?.addEventListener("click", () => legend.toggle());
+
 window.addEventListener("legend-visible", () => btnViewLegend?.classList.add("hidden"));
 window.addEventListener("legend-hidden", () => btnViewLegend?.classList.remove("hidden"));
+
+window.addEventListener("legend-filter-clear", () => {
+  Array.from(document.querySelectorAll(".category.disabled"))
+    .forEach(e => e.classList.remove("disabled", "filtered"));
+});
+
+window.addEventListener("legend-filter", (event: any) => {
+  const list: string[] = event.detail;
+  if (list.length > 1) {
+    Array.from(document.querySelectorAll(".category"))
+      .forEach(e => e.classList.add("disabled", "filtered"));
+
+    list.forEach((item: string) => {
+      Array.from(document.querySelectorAll(".category"))
+        .forEach((e: Element) => {
+          const c: string = (e as HTMLElement).dataset.category || "";
+          if (c === item) {
+            e.classList.remove("disabled", "filtered");
+          }
+        });
+    });
+  } else {
+    Array.from(document.querySelectorAll(".category.disabled"))
+      .forEach(e => e.classList.remove("disabled", "filtered"));
+
+    list.forEach((item: string) => {
+      Array.from(document.querySelectorAll(".category"))
+        .forEach((e: Element) => {
+          const c: string = (e as HTMLElement).dataset.category || "";
+          if (c !== item) {
+            e.classList.add("disabled", "filtered");
+          }
+        });
+    });
+  }
+});
 
 window.addEventListener("point-select", (event: any) => {
   const el = event.detail.el as HTMLElement;
