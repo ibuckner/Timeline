@@ -1,10 +1,13 @@
 import { TSequence, TCategory, TLegendItem } from "./typings/timeline";
 import { Slicer } from "@buckneri/js-lib-slicer";
-export class Legend {
+import { select } from "select";
+
+class Legend {
   public btnClose: HTMLElement;
   public btnFilter: HTMLElement;
   public element: HTMLElement;
   public title: HTMLElement;
+
   public get visible(): boolean {
     return !this.element.classList.contains("hidden");
   }
@@ -12,11 +15,11 @@ export class Legend {
   private _legendMap: Map<string, TLegendItem> = new Map<string, TLegendItem>();
   private _slicer: Slicer<string> = new Slicer<string>();
 
-  constructor(container: HTMLElement) {
+  constructor(container: HTMLElement | string) {
     this.element = document.createElement("div");
     this.element.classList.add("legend", "hidden");
-    container.appendChild(this.element);
-
+    select(container).appendChild(this.element);
+    
     const menu = document.createElement("div");
     menu.classList.add("menu-legend");
     this.element.appendChild(menu);
@@ -79,12 +82,13 @@ export class Legend {
   /**
    * Draws the legend items
    */
-  public draw(): void {
+  public draw(): Legend {
     (this.element.querySelector(".legend-items") as HTMLElement).innerHTML = "";
     this._legendMap.forEach((item: TLegendItem) => {
       item.el = this._addItem(item.name, item.foreColor, item.backColor);
       this._legendMap.set(item.name, item);
     });
+    return this;
   }
 
   /**
@@ -120,24 +124,26 @@ export class Legend {
   /**
    * Hide legend
    */
-  public hide(): void {
+  public hide(): Legend {
     this.element.classList.add("hidden");
     window.dispatchEvent(new CustomEvent("legend-hidden"));
+    return this;
   }
 
   /**
    * Display legend
    */
-  public show(): void {
+  public show(): Legend {
     this.element.classList.remove("hidden");
     window.dispatchEvent(new CustomEvent("legend-visible"));
+    return this;
   }
 
   /**
    * Show/hide legend
    */
-  public toggle(): void {
-    this.visible ? this.hide() : this.show();
+  public toggle(): Legend {
+    return this.visible ? this.hide() : this.show();
   }
 
   private _addItem(label: string, foreColor: string, backColor: string): HTMLElement {
@@ -152,4 +158,8 @@ export class Legend {
     return li;
   }
 
+}
+
+export function createLegend(container: HTMLElement | string): Legend {
+  return new Legend(container);
 }

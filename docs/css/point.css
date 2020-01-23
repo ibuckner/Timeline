@@ -12,6 +12,6 @@
   z-index: 500
 }
 
-.pt.highlight { border-width: 4px }
+.pt.highlight { border-width: 4px; transform: translate(-4px, -4px); }
 
-.pt:hover { border-width: 4px }
+.pt:hover { border-width: 4px; transform: translate(-4px, -4px); }

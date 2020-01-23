@@ -5,6 +5,156 @@
     return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
   }
 
+  function variance(values, valueof) {
+    let count = 0;
+    let delta;
+    let mean = 0;
+    let sum = 0;
+    if (valueof === undefined) {
+      for (let value of values) {
+        if (value != null && (value = +value) >= value) {
+          delta = value - mean;
+          mean += delta / ++count;
+          sum += delta * (value - mean);
+        }
+      }
+    } else {
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+          delta = value - mean;
+          mean += delta / ++count;
+          sum += delta * (value - mean);
+        }
+      }
+    }
+    if (count > 1) return sum / (count - 1);
+  }
+
+  function deviation(values, valueof) {
+    const v = variance(values, valueof);
+    return v ? Math.sqrt(v) : v;
+  }
+
+  function max(values, valueof) {
+    let max;
+    if (valueof === undefined) {
+      for (const value of values) {
+        if (value != null
+            && (max < value || (max === undefined && value >= value))) {
+          max = value;
+        }
+      }
+    } else {
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null
+            && (max < value || (max === undefined && value >= value))) {
+          max = value;
+        }
+      }
+    }
+    return max;
+  }
+
+  function min(values, valueof) {
+    let min;
+    if (valueof === undefined) {
+      for (const value of values) {
+        if (value != null
+            && (min > value || (min === undefined && value >= value))) {
+          min = value;
+        }
+      }
+    } else {
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null
+            && (min > value || (min === undefined && value >= value))) {
+          min = value;
+        }
+      }
+    }
+    return min;
+  }
+
+  // Based on https://github.com/mourner/quickselect
+  // ISC license, Copyright 2018 Vladimir Agafonkin.
+  function quickselect(array, k, left = 0, right = array.length - 1, compare = ascending) {
+    while (right > left) {
+      if (right - left > 600) {
+        const n = right - left + 1;
+        const m = k - left + 1;
+        const z = Math.log(n);
+        const s = 0.5 * Math.exp(2 * z / 3);
+        const sd = 0.5 * Math.sqrt(z * s * (n - s) / n) * (m - n / 2 < 0 ? -1 : 1);
+        const newLeft = Math.max(left, Math.floor(k - m * s / n + sd));
+        const newRight = Math.min(right, Math.floor(k + (n - m) * s / n + sd));
+        quickselect(array, k, newLeft, newRight, compare);
+      }
+
+      const t = array[k];
+      let i = left;
+      let j = right;
+
+      swap(array, left, k);
+      if (compare(array[right], t) > 0) swap(array, left, right);
+
+      while (i < j) {
+        swap(array, i, j), ++i, --j;
+        while (compare(array[i], t) < 0) ++i;
+        while (compare(array[j], t) > 0) --j;
+      }
+
+      if (compare(array[left], t) === 0) swap(array, left, j);
+      else ++j, swap(array, j, right);
+
+      if (j <= k) left = j + 1;
+      if (k <= j) right = j - 1;
+    }
+    return array;
+  }
+
+  function swap(array, i, j) {
+    const t = array[i];
+    array[i] = array[j];
+    array[j] = t;
+  }
+
+  function* numbers(values, valueof) {
+    if (valueof === undefined) {
+      for (let value of values) {
+        if (value != null && (value = +value) >= value) {
+          yield value;
+        }
+      }
+    } else {
+      let index = -1;
+      for (let value of values) {
+        if ((value = valueof(value, ++index, values)) != null && (value = +value) >= value) {
+          yield value;
+        }
+      }
+    }
+  }
+
+  function quantile(values, p, valueof) {
+    values = Float64Array.from(numbers(values, valueof));
+    if (!(n = values.length)) return;
+    if ((p = +p) <= 0 || n < 2) return min(values);
+    if (p >= 1) return max(values);
+    var n,
+        i = (n - 1) * p,
+        i0 = Math.floor(i),
+        value0 = max(quickselect(values, i0).subarray(0, i0 + 1)),
+        value1 = min(values.subarray(i0 + 1));
+    return value0 + (value1 - value0) * (i - i0);
+  }
+
+  function median(values, valueof) {
+    return quantile(values, 0.5, valueof);
+  }
+
   function randomInt(min, max) {
       const r = Math.floor(Math.random() * (max - min + 1) + min);
       return r > max
@@ -174,14 +324,14 @@
                   c.parent = s;
                   c.maxWait = 1;
                   c.points.sort((a, b) => ascending(a.wait, b.wait));
-                  /*c.stat = {};
+                  c.stat = {};
                   if (c.stat) {
-                    c.stat.median = median(c.points, d => d.wait);
-                    c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
-                    c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
-                    c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
-                    c.stat.std = deviation(c.points, d => d.wait);
-                  }*/
+                      c.stat.median = median(c.points, d => d.wait);
+                      c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
+                      c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
+                      c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
+                      c.stat.std = deviation(c.points, d => d.wait);
+                  }
                   c.points.forEach(pt => {
                       if (c.maxWait !== undefined && pt.wait > c.maxWait) {
                           c.maxWait = pt.wait;
@@ -269,13 +419,34 @@
       }
   }
 
+  /**
+   * DOM helper for selecting a node
+   * @param container - this can be a DOM node or standard CSS selector string
+   */
+  function select(container) {
+      let el;
+      if (typeof container === "string") {
+          el = document.getElementById(container);
+          if (el === null) {
+              el = document.querySelector(container);
+          }
+          if (el === null) {
+              throw new Error("Failed to resolve parent container");
+          }
+      }
+      else {
+          el = container;
+      }
+      return el;
+  }
+
   class Legend {
       constructor(container) {
           this._legendMap = new Map();
           this._slicer = new Slicer();
           this.element = document.createElement("div");
           this.element.classList.add("legend", "hidden");
-          container.appendChild(this.element);
+          select(container).appendChild(this.element);
           const menu = document.createElement("div");
           menu.classList.add("menu-legend");
           this.element.appendChild(menu);
@@ -340,6 +511,7 @@
               item.el = this._addItem(item.name, item.foreColor, item.backColor);
               this._legendMap.set(item.name, item);
           });
+          return this;
       }
       /**
        * Handles the click event on legend items
@@ -375,6 +547,7 @@
       hide() {
           this.element.classList.add("hidden");
           window.dispatchEvent(new CustomEvent("legend-hidden"));
+          return this;
       }
       /**
        * Display legend
@@ -382,12 +555,13 @@
       show() {
           this.element.classList.remove("hidden");
           window.dispatchEvent(new CustomEvent("legend-visible"));
+          return this;
       }
       /**
        * Show/hide legend
        */
       toggle() {
-          this.visible ? this.hide() : this.show();
+          return this.visible ? this.hide() : this.show();
       }
       _addItem(label, foreColor, backColor) {
           const li = document.createElement("div");
@@ -400,6 +574,9 @@
               .appendChild(li);
           return li;
       }
+  }
+  function createLegend(container) {
+      return new Legend(container);
   }
 
   /**
@@ -415,7 +592,7 @@
       constructor(container) {
           this.element = document.createElement("div");
           this.element.classList.add("objExplorer", "inspector", "hidden");
-          container.appendChild(this.element);
+          select(container).appendChild(this.element);
           const badge = document.createElement("div");
           badge.classList.add("badge");
           this.element.appendChild(badge);
@@ -456,7 +633,8 @@
                   badge.style.backgroundColor = d.el.style.borderColor;
               }
               else if (d.maxWait !== undefined) {
-                  message = `<b>${d.name}</b><br>The opening times are ${numberToTime(d.start)} to ${numberToTime(d.end)}<br>The longest waiting time was ${d.maxWait} miuntes.`;
+                  message = `<b>${d.name}</b><br>The opening times are ${numberToTime(d.start)} to ${numberToTime(d.end)}<br>
+        The longest waiting time was ${d.maxWait} miuntes. The median is ${d.stat.median} minutes.`;
                   badge.style.backgroundColor = d.el.style.backgroundColor;
               }
               else if (d.avgWait !== undefined) {
@@ -473,6 +651,7 @@
       hide() {
           this.element.classList.add("hidden");
           window.dispatchEvent(new CustomEvent("inspector-hidden"));
+          return this;
       }
       /**
        * Display inspector
@@ -480,13 +659,18 @@
       show() {
           this.element.classList.remove("hidden");
           window.dispatchEvent(new CustomEvent("inspector-visible"));
+          return this;
       }
       /**
        * Show/hide inspector
        */
       toggle() {
           this.visible ? this.hide() : this.show();
+          return this;
       }
+  }
+  function createInspector(container) {
+      return new Inspector(container);
   }
 
   /**
@@ -533,7 +717,15 @@
   class Category {
       constructor(options) {
           this._data = { backColor: "#000", end: 0, foreColor: "#fff", name: "Unnamed", points: [], start: 0 };
+          this._observer = new ResizeObserver(() => Category.updateMedianXY(this._data));
           this.neighborCount = options.neighborCount !== undefined ? options.neighborCount : 0;
+      }
+      /**
+       * Returns true if category is selected
+       */
+      get selected() {
+          var _a, _b;
+          return ((_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.contains("highlight")) || false;
       }
       data(d) {
           if (d) {
@@ -543,15 +735,23 @@
           return this._data;
       }
       /**
+       * Removes selection from category
+       */
+      deselect() {
+          var _a, _b;
+          (_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.remove("highlight");
+          return this;
+      }
+      /**
        * Once drawn, each sequence item holds the DOM object connected to it
        * @param container
        */
       draw(container) {
+          var _a;
           const w = Math.floor(100 / (this.neighborCount === 0 ? 1 : this.neighborCount));
           if (!this._data.el) {
               this._data.el = document.createElement("div");
               this._data.el.classList.add("category");
-              this._data.el.addEventListener("click", () => console.log("Not available"));
               this._data.el.dataset.category = this._data.name;
               container.appendChild(this._data.el);
           }
@@ -559,11 +759,10 @@
           this._data.el.style.backgroundColor = this._data.backColor;
           this._data.el.style.borderColor = this._data.foreColor;
           this._data.el.addEventListener("click", (e) => {
-              var _a, _b, _c, _d;
               e.stopPropagation();
-              const eventName = ((_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.contains("highlight")) ? "category-unselect" : "category-select";
+              const eventName = this.selected ? "category-unselect" : "category-select";
               if (eventName === "category-unselect") {
-                  (_d = (_c = this._data) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("highlight");
+                  this.deselect();
               }
               dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
           });
@@ -578,8 +777,31 @@
               else {
                   throw new Error("Category is missing average width and maximum waiting times");
               }
+              this._addQuantiles();
           }
+          this._observer.observe((_a = this._data.el) === null || _a === void 0 ? void 0 : _a.parentNode);
           return this;
+      }
+      _addQuantiles() {
+          var _a, _b;
+          const med = document.createElement("div");
+          med.classList.add("median");
+          med.textContent = "";
+          med.style.backgroundColor = this._data.backColor;
+          med.style.borderColor = this._data.foreColor;
+          med.title = `Median is ${(_a = this._data.stat) === null || _a === void 0 ? void 0 : _a.median} minutes`;
+          (_b = this._data.el) === null || _b === void 0 ? void 0 : _b.appendChild(med);
+          Category.updateMedianXY(this._data);
+      }
+      static updateMedianXY(d) {
+          var _a, _b, _c;
+          const box = (_a = d.el) === null || _a === void 0 ? void 0 : _a.getBoundingClientRect();
+          const med = (_b = d.el) === null || _b === void 0 ? void 0 : _b.querySelector(".median");
+          if (med) {
+              if (((_c = d.stat) === null || _c === void 0 ? void 0 : _c.median) && d.maxWait !== undefined) {
+                  med.style.transform = `translateX(${(box.width - 4) * (d.stat.median / d.maxWait)}px)`;
+              }
+          }
       }
   }
 
@@ -657,28 +879,60 @@
       }
   }
 
-  var _a, _b;
+  class Button {
+      constructor(selector) {
+          this.element = select(selector);
+      }
+      hide() {
+          this.element.classList.add("hidden");
+          return this;
+      }
+      /**
+       * Responds to indirect events
+       * @param eventName - DOM event name
+       * @param cb - function to call
+       */
+      indirect(eventName, cb) {
+          window.addEventListener(eventName, (event) => cb.call(this, event));
+          return this;
+      }
+      /**
+       * Responds to direct events
+       * @param eventName - DOM event name
+       * @param cb - function to call
+       */
+      direct(eventName, cb) {
+          this.element.addEventListener(eventName, (event) => cb.call(this, event));
+          return this;
+      }
+      show() {
+          this.element.classList.remove("hidden");
+          return this;
+      }
+  }
+  function createButton(selector) {
+      return new Button(selector);
+  }
+
   const demo = new DemoData();
   demo.addRandomSequence()
       .addRandomSequence()
       .addRandomSequence()
       .recalc();
-  const container = document.querySelector(".container");
-  const legend = new Legend(container);
-  legend.data(demo.data).draw();
-  const inspector = new Inspector(container);
+  const legend = createLegend(".container").data(demo.data).draw();
+  createInspector(".container");
   const timeline = document.querySelector(".timeline");
   let sequences = linkData(demo.data);
   drawSequences(sequences, timeline);
-  const btnViewLegend = document.getElementById("btnShowLegend");
-  (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.addEventListener("click", () => legend.toggle());
-  window.addEventListener("legend-visible", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.add("hidden"); });
-  window.addEventListener("legend-hidden", () => { var _a; return (_a = btnViewLegend) === null || _a === void 0 ? void 0 : _a.classList.remove("hidden"); });
-  window.addEventListener("legend-filter-clear", () => {
+  const btnLegend = createButton("btnShowLegend");
+  btnLegend.direct("click", () => legend.toggle())
+      .indirect("legend-visible", () => btnLegend.hide())
+      .indirect("legend-hidden", () => btnLegend.show())
+      .indirect("legend-filter-clear", () => {
       Array.from(document.querySelectorAll(".category.disabled"))
           .forEach(e => e.classList.remove("disabled", "filtered"));
-  });
-  window.addEventListener("legend-filter", (event) => {
+  })
+      .indirect("legend-filter", (event) => {
       const list = event.detail;
       if (list.length > 1) {
           Array.from(document.querySelectorAll(".category"))
@@ -707,17 +961,7 @@
           });
       }
   });
-  window.addEventListener("point-select", (event) => {
-      const el = event.detail.el;
-      if (el) {
-          Array.from(document.querySelectorAll(".pt.highlight")).forEach(el => {
-              el.classList.remove("highlight");
-          });
-          el.classList.add("highlight");
-      }
-  });
-  const btnAddData = document.getElementById("btnAddData");
-  (_b = btnAddData) === null || _b === void 0 ? void 0 : _b.addEventListener("click", () => {
+  createButton("btnAddData").direct("click", () => {
       demo.addRandomSequence().recalc();
       sequences = linkData(demo.data, sequences);
       drawSequences(sequences, timeline);
@@ -752,6 +996,15 @@
    * @param container - parent element of graphic
    */
   function drawSequences(sequences, container) {
+      window.addEventListener("point-select", (event) => {
+          const el = event.detail.el;
+          if (el) {
+              Array.from(document.querySelectorAll(".pt.highlight")).forEach(el => {
+                  el.classList.remove("highlight");
+              });
+              el.classList.add("highlight");
+          }
+      });
       sequences.forEach((seq) => { seq.draw(container); });
       sequences.forEach((seq) => {
           const d = seq.data();

@@ -3,8 +3,19 @@ import { numberToTime } from "./format";
 
 export class Category {
   private _data: TCategory = { backColor: "#000", end: 0, foreColor: "#fff", name: "Unnamed", points: [], start: 0 };
+  private _observer: ResizeObserver;
+
+  public neighborCount: number;
+
+  /**
+   * Returns true if category is selected
+   */
+  public get selected(): boolean {
+    return this._data?.el?.classList.contains("highlight") || false;
+  }
 
   constructor(options: any) {
+    this._observer = new ResizeObserver(() => Category.updateMedianXY(this._data));
     this.neighborCount = options.neighborCount !== undefined ? options.neighborCount : 0;
   }
 
@@ -16,7 +27,13 @@ export class Category {
     return this._data;
   }
 
-  public neighborCount: number;
+  /**
+   * Removes selection from category
+   */
+  public deselect(): Category {
+    this._data?.el?.classList.remove("highlight");
+    return this;
+  }
 
   /**
    * Once drawn, each sequence item holds the DOM object connected to it
@@ -28,7 +45,6 @@ export class Category {
     if (!this._data.el) {
       this._data.el = document.createElement("div");
       this._data.el.classList.add("category");
-      this._data.el.addEventListener("click", () => console.log("Not available"));
       this._data.el.dataset.category = this._data.name;
       container.appendChild(this._data.el);
     }
@@ -37,9 +53,9 @@ export class Category {
     this._data.el.style.borderColor = this._data.foreColor;
     this._data.el.addEventListener("click", (e) => {
       e.stopPropagation();
-      const eventName: string = this._data?.el?.classList.contains("highlight") ? "category-unselect" : "category-select";
+      const eventName: string = this.selected ? "category-unselect" : "category-select";
       if (eventName === "category-unselect") {
-        this._data?.el?.classList.remove("highlight");
+        this.deselect();
       }
       dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
     });
@@ -53,9 +69,33 @@ export class Category {
         this._data.el.style.flexBasis = `${w * (this._data.maxWait / this._data.parent.avgWait)}%`;
       } else {
         throw new Error("Category is missing average width and maximum waiting times");
-      }  
+      }
+
+      this._addQuantiles();
     }
     
+    this._observer.observe(this._data.el?.parentNode as HTMLElement);
     return this;
+  }
+
+  private _addQuantiles(): void {
+    const med = document.createElement("div");
+    med.classList.add("median");
+    med.textContent = "";
+    med.style.backgroundColor = this._data.backColor;
+    med.style.borderColor = this._data.foreColor;
+    med.title = `Median is ${this._data.stat?.median} minutes`;
+    this._data.el?.appendChild(med);
+    Category.updateMedianXY(this._data);
+  }
+
+  public static updateMedianXY(d: any): void {
+    const box: ClientRect = d.el?.getBoundingClientRect() as ClientRect;
+    const med: HTMLElement | null = d.el?.querySelector(".median") as HTMLElement;
+    if (med) {
+      if (d.stat?.median && d.maxWait !== undefined) {
+        med.style.transform = `translateX(${(box.width - 4) * (d.stat.median / d.maxWait)}px)`;
+      }
+    }
   }
 }

@@ -3,17 +3,9 @@ html {
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
 }
 
-h3 {
-  font-size: 1.25rem;
-  font-weight: normal;
-  margin: 0;
-  padding: 0;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.hidden { opacity: 0 !important }
+.disabled { cursor: not-allowed; pointer-events: none }
 .filtered { opacity: 0.15 }
+.hidden { opacity: 0 !important }
 
 .container {
   background-color: #fff;
@@ -40,43 +32,4 @@ h3 {
   flex-direction: column;
   flex-grow: 8;
   justify-content: space-evenly;
-}
-
-.disabled {
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-/* categories */
-
-.median {
-  border-width: 1px;
-  border-style: dashed;
-  height: 100%;
-  left: 0;
-  position: absolute;
-  top: 0;
-  transition: all 500ms ease-in-out; 
-  width: 0;
-  z-index: 400
-}
-
-/* Menu */
-
-.menu-button {
-  background-color: #fff;
-  border: 1px solid #999;
-  cursor: pointer;
-  margin: 0 10px 0 10px;
-  padding: 5px;
-  user-select: none;
-  z-index: 10000;
-  text-align: center;
-  transition: all 0.6s ease-in-out;
-  width: 100px;
-}
-
-.menu-button.hidden {
-  opacity: 0;
-  user-select: none;
 }
