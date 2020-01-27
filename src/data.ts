@@ -1,8 +1,13 @@
 import { ascending, deviation, median, quantile } from "d3-array";
-import { TSequence, TCategory, TPoint } from "./typings/timeline";
+import { TSequence, TCategory, TPoint, TCategoryLabel } from "./typings/timeline";
 import { randomInt, randomTimeInt } from "@buckneri/js-lib-random";
 
+/**
+ * For demo use
+ */
 export class DemoData {
+  private _activeCategories: Map<string, TCategoryLabel> = new Map();
+
   private _categories: any[] = [
     {
       name: "Late Arrival (LAT)",
@@ -56,6 +61,9 @@ export class DemoData {
     }
   ];
 
+  public get categories(): TCategoryLabel[] {
+    return Array.from(this._activeCategories.values());
+  }
   public data: TSequence[] = [];
   public maximumPoints: number = 25;
   public maximumTime: number = 0;
@@ -84,7 +92,13 @@ export class DemoData {
     }
     this._categories[i].points = [];
     let result = {};
-    Object.assign(result, this._categories[i]);
+    const c: TCategory = this._categories[i];
+    Object.assign(result, c);
+    this._activeCategories.set(c.name, {
+      backColor: c.backColor,
+      foreColor: c.foreColor,
+      name: c.name
+    });
     return result;
   }
 

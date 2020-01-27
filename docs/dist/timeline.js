@@ -192,12 +192,16 @@
       return Math.round(value / round) * round;
   }
 
+  /**
+   * For demo use
+   */
   class DemoData {
       /**
        * Initialise generator
        * @param start - id index to begin at
        */
       constructor(options) {
+          this._activeCategories = new Map();
           this._categories = [
               {
                   name: "Late Arrival (LAT)",
@@ -259,6 +263,9 @@
               }
           }
       }
+      get categories() {
+          return Array.from(this._activeCategories.values());
+      }
       addRandomCategory(exclude) {
           let i = randomInt(0, this._categories.length - 1);
           let search = true;
@@ -272,7 +279,13 @@
           }
           this._categories[i].points = [];
           let result = {};
-          Object.assign(result, this._categories[i]);
+          const c = this._categories[i];
+          Object.assign(result, c);
+          this._activeCategories.set(c.name, {
+              backColor: c.backColor,
+              foreColor: c.foreColor,
+              name: c.name
+          });
           return result;
       }
       addRandomSequence() {
@@ -355,18 +368,23 @@
   class Slicer {
       constructor(list) {
           this._ = new Map();
+          this._active = false;
           if (list) {
               this.data = list;
           }
+      }
+      get active() {
+          return this._active;
       }
       get data() {
           return this._;
       }
       set data(list) {
           if (Array.isArray(list)) {
-              this._.clear();
               list.forEach((item) => {
-                  this._.set(item, { filtered: false, selected: false });
+                  if (!this._.has(item)) {
+                      this._.set(item, { filtered: false, selected: false });
+                  }
               });
           }
       }
@@ -374,6 +392,7 @@
           this._.forEach((_, key) => {
               this._.set(key, { filtered: false, selected: false });
           });
+          this._active = false;
           return this;
       }
       toggle(item, ctrlKey = false) {
@@ -404,6 +423,7 @@
                   ++filtered;
               }
           });
+          this._active = selectionList.length > 0 ? true : false;
           if (filtered === this._.size ||
               selectionList.length === 0 ||
               selectionList.length === this._.size) {
@@ -440,13 +460,59 @@
       return el;
   }
 
-  class Legend {
-      constructor(container) {
-          this._legendMap = new Map();
+  class Control {
+      constructor(selector) {
+          this.element = select(selector);
+      }
+      get visible() {
+          return !this.element.classList.contains("hidden");
+      }
+      set visible(state) {
+          state
+              ? this.element.classList.remove("hidden")
+              : this.element.classList.add("hidden");
+      }
+      hide() {
+          this.visible = false;
+          return this;
+      }
+      /**
+       * Responds to indirect events
+       * @param eventName - DOM event name
+       * @param cb - function to call
+       */
+      indirect(eventName, cb) {
+          window.addEventListener(eventName, (event) => cb.call(this, event));
+          return this;
+      }
+      /**
+       * Responds to direct events
+       * @param eventName - DOM event name
+       * @param cb - function to call
+       */
+      direct(eventName, cb) {
+          this.element.addEventListener(eventName, (event) => cb.call(this, event));
+          return this;
+      }
+      show() {
+          this.visible = true;
+          return this;
+      }
+      toggle() {
+          this.visible ? this.hide() : this.show();
+          return this;
+      }
+  }
+
+  class Legend extends Control {
+      constructor(selector) {
+          super(selector);
+          this.filterOn = false;
+          this._ = [];
           this._slicer = new Slicer();
           this.element = document.createElement("div");
           this.element.classList.add("legend", "hidden");
-          select(container).appendChild(this.element);
+          select(selector).appendChild(this.element);
           const menu = document.createElement("div");
           menu.classList.add("menu-legend");
           this.element.appendChild(menu);
@@ -467,9 +533,6 @@
           items.classList.add("legend-items");
           this.element.appendChild(items);
       }
-      get visible() {
-          return !this.element.classList.contains("hidden");
-      }
       /**
        * Clear any filtered legend items
        */
@@ -486,30 +549,21 @@
        * @param data - list of sequences
        */
       data(data) {
-          const labels = [];
-          data.forEach((s) => {
-              s.categories.forEach((c) => {
-                  if (!this._legendMap.has(c.name)) {
-                      labels.push(c.name);
-                      this._legendMap.set(c.name, {
-                          backColor: c.backColor,
-                          foreColor: c.foreColor,
-                          name: c.name
-                      });
-                  }
-              });
-          });
-          this._slicer.data = labels;
+          this._ = data;
+          this._slicer.data = this._.map(d => d.name);
           return this;
       }
       /**
        * Draws the legend items
        */
       draw() {
-          this.element.querySelector(".legend-items").innerHTML = "";
-          this._legendMap.forEach((item) => {
-              item.el = this._addItem(item.name, item.foreColor, item.backColor);
-              this._legendMap.set(item.name, item);
+          this._.forEach((item) => {
+              if (document.querySelector(`[data-label="${item.name}"]`) === null) {
+                  const el = this._addItem(item.name, item.foreColor, item.backColor);
+                  if (this.filterOn) {
+                      el.classList.add("filtered");
+                  }
+              }
           });
           return this;
       }
@@ -517,51 +571,52 @@
        * Handles the click event on legend items
        */
       handleClick(e) {
-          const key = e.target.textContent || "";
-          const clicked = this._legendMap.get(key);
-          if (clicked) {
-              this._slicer.toggle(clicked.name, e.ctrlKey);
-          }
-          const selectionList = [];
-          this.btnFilter.classList.add("hidden");
-          this._slicer.data.forEach((value, key) => {
-              var _a, _b, _c, _d;
-              const item = this._legendMap.get(key);
-              if (value.selected) {
-                  selectionList.push(key);
-              }
-              if (value.filtered) {
-                  (_b = (_a = item) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.add("filtered");
-                  this.btnFilter.classList.remove("hidden");
-              }
-              else {
-                  (_d = (_c = item) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("filtered");
-              }
-          });
-          const eventName = (selectionList.length === 0) ? "legend-filter-clear" : "legend-filter";
-          window.dispatchEvent(new CustomEvent(eventName, { detail: selectionList }));
+          const key = e.target.dataset.label || "";
+          this._slicer.toggle(key, e.ctrlKey);
+          this.state();
       }
-      /**
-       * Hide legend
-       */
       hide() {
-          this.element.classList.add("hidden");
+          super.hide();
           window.dispatchEvent(new CustomEvent("legend-hidden"));
           return this;
       }
-      /**
-       * Display legend
-       */
       show() {
-          this.element.classList.remove("hidden");
+          super.show();
           window.dispatchEvent(new CustomEvent("legend-visible"));
           return this;
       }
-      /**
-       * Show/hide legend
-       */
+      state() {
+          const stateList = [];
+          this.filterOn = false;
+          this._slicer.data.forEach((value, key) => {
+              stateList.push({ label: key, state: value });
+              if (value.filtered) {
+                  this.filterOn = true;
+              }
+          });
+          this.filterOn
+              ? this.btnFilter.classList.remove("hidden")
+              : this.btnFilter.classList.add("hidden");
+          const filters = [];
+          stateList.forEach((item) => {
+              const el = document.querySelector(`[data-label="${item.label}"]`);
+              if (item.state.filtered) {
+                  el.classList.add("filtered");
+              }
+              else {
+                  el.classList.remove("filtered");
+              }
+              if (item.state.selected) {
+                  filters.push(item.label);
+              }
+          });
+          const eventName = (filters.length === 0) ? "legend-filter-clear" : "legend-filter";
+          window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
+          return this;
+      }
       toggle() {
-          return this.visible ? this.hide() : this.show();
+          super.toggle();
+          return this;
       }
       _addItem(label, foreColor, backColor) {
           const li = document.createElement("div");
@@ -569,6 +624,7 @@
           li.style.backgroundColor = backColor;
           li.style.borderColor = foreColor;
           li.textContent = label;
+          li.dataset.label = label;
           li.addEventListener("click", e => this.handleClick(e));
           this.element.querySelector(".legend-items")
               .appendChild(li);
@@ -580,7 +636,7 @@
   }
 
   /**
-   * Returns number as hh:mm
+   * Returns number as hh:mm string
    * @param value - number should conform to hhmm expectations
    */
   function numberToTime(value) {
@@ -588,11 +644,15 @@
       return t.slice(0, 2) + ":" + t.slice(-2);
   }
 
-  class Inspector {
-      constructor(container) {
+  /**
+   * Container for holding inspector window-related actions and events
+   */
+  class Inspector extends Control {
+      constructor(selector) {
+          super(selector);
           this.element = document.createElement("div");
           this.element.classList.add("objExplorer", "inspector", "hidden");
-          select(container).appendChild(this.element);
+          select(selector).appendChild(this.element);
           const badge = document.createElement("div");
           badge.classList.add("badge");
           this.element.appendChild(badge);
@@ -610,15 +670,6 @@
           const content = document.createElement("div");
           content.classList.add("content");
           wrapper.appendChild(content);
-          window.addEventListener("point-select", (e) => this.draw(e.detail).show());
-          window.addEventListener("category-select", (e) => this.draw(e.detail).show());
-          window.addEventListener("sequence-select", (e) => this.draw(e.detail).show());
-          window.addEventListener("point-unselect", () => this.hide());
-          window.addEventListener("category-unselect", () => this.hide());
-          window.addEventListener("sequence-unselect", () => this.hide());
-      }
-      get visible() {
-          return !this.element.classList.contains("hidden");
       }
       /**
        * Draws the inspector content
@@ -645,19 +696,13 @@
           content.innerHTML = message;
           return this;
       }
-      /**
-       * Hide inspector
-       */
       hide() {
-          this.element.classList.add("hidden");
+          super.hide();
           window.dispatchEvent(new CustomEvent("inspector-hidden"));
           return this;
       }
-      /**
-       * Display inspector
-       */
       show() {
-          this.element.classList.remove("hidden");
+          super.show();
           window.dispatchEvent(new CustomEvent("inspector-visible"));
           return this;
       }
@@ -665,7 +710,7 @@
        * Show/hide inspector
        */
       toggle() {
-          this.visible ? this.hide() : this.show();
+          super.toggle();
           return this;
       }
   }
@@ -714,6 +759,9 @@
       }
   }
 
+  /**
+   * Categories are the colored ranges acting as containers for events
+   */
   class Category {
       constructor(options) {
           this._data = { backColor: "#000", end: 0, foreColor: "#fff", name: "Unnamed", points: [], start: 0 };
@@ -879,35 +927,12 @@
       }
   }
 
-  class Button {
+  /**
+   * Container for holding button-related actions and events
+   */
+  class Button extends Control {
       constructor(selector) {
-          this.element = select(selector);
-      }
-      hide() {
-          this.element.classList.add("hidden");
-          return this;
-      }
-      /**
-       * Responds to indirect events
-       * @param eventName - DOM event name
-       * @param cb - function to call
-       */
-      indirect(eventName, cb) {
-          window.addEventListener(eventName, (event) => cb.call(this, event));
-          return this;
-      }
-      /**
-       * Responds to direct events
-       * @param eventName - DOM event name
-       * @param cb - function to call
-       */
-      direct(eventName, cb) {
-          this.element.addEventListener(eventName, (event) => cb.call(this, event));
-          return this;
-      }
-      show() {
-          this.element.classList.remove("hidden");
-          return this;
+          super(selector);
       }
   }
   function createButton(selector) {
@@ -919,8 +944,16 @@
       .addRandomSequence()
       .addRandomSequence()
       .recalc();
-  const legend = createLegend(".container").data(demo.data).draw();
-  createInspector(".container");
+  const legend = createLegend(".container");
+  legend.data(demo.categories).draw();
+  const inspector = createInspector(".container");
+  inspector
+      .indirect("point-select", (e) => inspector.draw(e.detail).show())
+      .indirect("category-select", (e) => inspector.draw(e.detail).show())
+      .indirect("sequence-select", (e) => inspector.draw(e.detail).show())
+      .indirect("point-unselect", () => inspector.hide())
+      .indirect("category-unselect", () => inspector.hide())
+      .indirect("sequence-unselect", () => inspector.hide());
   const timeline = document.querySelector(".timeline");
   let sequences = linkData(demo.data);
   drawSequences(sequences, timeline);
@@ -965,6 +998,7 @@
       demo.addRandomSequence().recalc();
       sequences = linkData(demo.data, sequences);
       drawSequences(sequences, timeline);
+      legend.data(demo.categories).state().draw();
   });
   /**
    * Iterates over demo data and updates the sequences array

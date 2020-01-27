@@ -1,24 +1,22 @@
-import { TSequence, TCategory, TLegendItem } from "./typings/timeline";
-import { Slicer } from "@buckneri/js-lib-slicer";
+import { TCategoryLabel } from "./typings/timeline";
+import { Slicer, TSlicerState } from "@buckneri/js-lib-slicer";
+import { Control } from "./control";
 import { select } from "select";
 
-class Legend {
+class Legend extends Control {
   public btnClose: HTMLElement;
   public btnFilter: HTMLElement;
-  public element: HTMLElement;
+  public filterOn: boolean = false;
   public title: HTMLElement;
 
-  public get visible(): boolean {
-    return !this.element.classList.contains("hidden");
-  }
-
-  private _legendMap: Map<string, TLegendItem> = new Map<string, TLegendItem>();
+  private _: TCategoryLabel[] = [];
   private _slicer: Slicer<string> = new Slicer<string>();
 
-  constructor(container: HTMLElement | string) {
+  constructor(selector: HTMLElement | string) {
+    super(selector);
     this.element = document.createElement("div");
     this.element.classList.add("legend", "hidden");
-    select(container).appendChild(this.element);
+    select(selector).appendChild(this.element);
     
     const menu = document.createElement("div");
     menu.classList.add("menu-legend");
@@ -61,21 +59,9 @@ class Legend {
    * Populates the legend with categories
    * @param data - list of sequences
    */
-  public data(data: TSequence[]): Legend {
-    const labels: string[] = [];
-    data.forEach((s: TSequence) => {
-      s.categories.forEach((c: TCategory) => {
-        if (!this._legendMap.has(c.name)) {
-          labels.push(c.name);
-          this._legendMap.set(c.name, {
-            backColor: c.backColor,
-            foreColor: c.foreColor,
-            name: c.name
-          });
-        }
-      });
-    });
-    this._slicer.data = labels;
+  public data(data: TCategoryLabel[]): Legend {
+    this._ = data;
+    this._slicer.data = this._.map(d => d.name);
     return this;
   }
 
@@ -83,10 +69,13 @@ class Legend {
    * Draws the legend items
    */
   public draw(): Legend {
-    (this.element.querySelector(".legend-items") as HTMLElement).innerHTML = "";
-    this._legendMap.forEach((item: TLegendItem) => {
-      item.el = this._addItem(item.name, item.foreColor, item.backColor);
-      this._legendMap.set(item.name, item);
+    this._.forEach((item: TCategoryLabel) => {
+      if (document.querySelector(`[data-label="${item.name}"]`) === null) {
+        const el = this._addItem(item.name, item.foreColor, item.backColor);
+        if (this.filterOn) {
+          el.classList.add("filtered");
+        }
+      }
     });
     return this;
   }
@@ -95,55 +84,60 @@ class Legend {
    * Handles the click event on legend items
    */
   public handleClick(e: any): void {
-    const key: string = (e.target as HTMLElement).textContent || "";
-    const clicked: TLegendItem | undefined = this._legendMap.get(key);
-
-    if (clicked) {
-      this._slicer.toggle(clicked.name, e.ctrlKey);
-    }
-
-    const selectionList: string[] = [];
-    this.btnFilter.classList.add("hidden");
-    this._slicer.data.forEach((value: any, key: string) => {
-      const item = this._legendMap.get(key);
-      if (value.selected) {
-        selectionList.push(key);
-      }
-      if (value.filtered) {
-        item?.el?.classList.add("filtered");
-        this.btnFilter.classList.remove("hidden");
-      } else {
-        item?.el?.classList.remove("filtered");
-      }
-    });
-
-    const eventName: string = (selectionList.length === 0) ? "legend-filter-clear" : "legend-filter";
-    window.dispatchEvent(new CustomEvent(eventName, { detail: selectionList }));
+    const key: string = (e.target as HTMLElement).dataset.label || "";
+    this._slicer.toggle(key, e.ctrlKey);
+    this.state();
   }
 
-  /**
-   * Hide legend
-   */
   public hide(): Legend {
-    this.element.classList.add("hidden");
+    super.hide();
     window.dispatchEvent(new CustomEvent("legend-hidden"));
     return this;
   }
 
-  /**
-   * Display legend
-   */
   public show(): Legend {
-    this.element.classList.remove("hidden");
+    super.show();
     window.dispatchEvent(new CustomEvent("legend-visible"));
     return this;
   }
 
-  /**
-   * Show/hide legend
-   */
+  public state(): Legend {
+    const stateList: { label: string, state: TSlicerState }[] = [];
+
+    this.filterOn = false;
+    this._slicer.data.forEach((value: TSlicerState, key: string) => {
+      stateList.push({ label: key, state: value });
+      if (value.filtered) {
+        this.filterOn = true;
+      }
+    });
+
+    this.filterOn
+      ? this.btnFilter.classList.remove("hidden")
+      : this.btnFilter.classList.add("hidden");
+    const filters: string[] = [];
+
+    stateList.forEach((item: { label: string, state: TSlicerState }) => {
+      const el = document.querySelector(`[data-label="${item.label}"]`) as HTMLElement;
+      if (item.state.filtered) {
+        el.classList.add("filtered");
+      } else {
+        el.classList.remove("filtered");
+      }
+      if (item.state.selected) {
+        filters.push(item.label);
+      }
+    });
+
+    const eventName: string = (filters.length === 0) ? "legend-filter-clear" : "legend-filter";
+    window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
+
+    return this;
+  }
+
   public toggle(): Legend {
-    return this.visible ? this.hide() : this.show();
+    super.toggle();
+    return this;
   }
 
   private _addItem(label: string, foreColor: string, backColor: string): HTMLElement {
@@ -152,12 +146,12 @@ class Legend {
     li.style.backgroundColor = backColor;
     li.style.borderColor = foreColor;
     li.textContent = label;
+    li.dataset.label = label;
     li.addEventListener("click", e => this.handleClick(e));
     (this.element.querySelector(".legend-items") as HTMLElement)
       .appendChild(li);
     return li;
   }
-
 }
 
 export function createLegend(container: HTMLElement | string): Legend {

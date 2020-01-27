@@ -1,4 +1,4 @@
-import { TSequence, TCategory, TPoint } from "./typings/timeline";
+import { TSequence, TCategory, TCategoryLabel, TPoint } from "./typings/timeline";
 import { DemoData } from "./data";
 import { createLegend } from "./legend";
 import { createInspector } from "./inspector";
@@ -13,8 +13,18 @@ demo.addRandomSequence()
     .addRandomSequence()
     .recalc();
 
-const legend = createLegend(".container").data(demo.data).draw();
-createInspector(".container");
+const legend = createLegend(".container");
+legend.data(demo.categories).draw();
+
+const inspector = createInspector(".container");
+inspector
+  .indirect("point-select", (e: any) => inspector.draw(e.detail).show())
+  .indirect("category-select", (e: any) => inspector.draw(e.detail).show())
+  .indirect("sequence-select", (e: any) => inspector.draw(e.detail).show())
+  .indirect("point-unselect", () => inspector.hide())
+  .indirect("category-unselect", () => inspector.hide())
+  .indirect("sequence-unselect", () => inspector.hide());
+
 const timeline = document.querySelector(".timeline") as HTMLElement;
 let sequences: Sequence[] = linkData(demo.data);
 drawSequences(sequences, timeline);
@@ -61,7 +71,8 @@ btnLegend.direct("click", () => legend.toggle())
 createButton("btnAddData").direct("click", () => {
   demo.addRandomSequence().recalc();
   sequences = linkData(demo.data, sequences);
-  drawSequences(sequences, timeline);  
+  drawSequences(sequences, timeline);
+  legend.data(demo.categories).state().draw();
 });
 
 /**

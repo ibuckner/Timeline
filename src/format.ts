@@ -1,5 +1,5 @@
 /**
- * Returns number as hh:mm
+ * Returns number as hh:mm string
  * @param value - number should conform to hhmm expectations
  */
 export function numberToTime(value: number): string {

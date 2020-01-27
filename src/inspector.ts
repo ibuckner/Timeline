@@ -1,18 +1,18 @@
 import { numberToTime } from "./format";
+import { Control } from "./control";
 import { select } from "./select";
 
-export class Inspector {
+/**
+ * Container for holding inspector window-related actions and events
+ */
+export class Inspector extends Control {
   public btnClose: HTMLElement;  
-  public element: HTMLElement;
-  
-  public get visible(): boolean {
-    return !this.element.classList.contains("hidden");
-  }
-  
-  constructor(container: HTMLElement | string) {
+      
+  constructor(selector: HTMLElement | string) {
+    super(selector);
     this.element = document.createElement("div");
     this.element.classList.add("objExplorer", "inspector", "hidden");
-    select(container).appendChild(this.element);
+    select(selector).appendChild(this.element);
 
     const badge = document.createElement("div");
     badge.classList.add("badge");
@@ -35,14 +35,6 @@ export class Inspector {
     const content = document.createElement("div");
     content.classList.add("content");
     wrapper.appendChild(content);
-
-    window.addEventListener("point-select", (e: any) => this.draw(e.detail).show());
-    window.addEventListener("category-select", (e: any) => this.draw(e.detail).show());
-    window.addEventListener("sequence-select", (e: any) => this.draw(e.detail).show());
-
-    window.addEventListener("point-unselect", () => this.hide());
-    window.addEventListener("category-unselect", () => this.hide());
-    window.addEventListener("sequence-unselect", () => this.hide());
   }
 
   /**
@@ -69,20 +61,14 @@ export class Inspector {
     return this;
   }
 
-  /**
-   * Hide inspector
-   */
   public hide(): Inspector {
-    this.element.classList.add("hidden");
+    super.hide();
     window.dispatchEvent(new CustomEvent("inspector-hidden"));
     return this;
   }
 
-  /**
-   * Display inspector
-   */
   public show(): Inspector {
-    this.element.classList.remove("hidden");
+    super.show();
     window.dispatchEvent(new CustomEvent("inspector-visible"));
     return this;
   }
@@ -91,7 +77,7 @@ export class Inspector {
    * Show/hide inspector
    */
   public toggle(): Inspector {
-    this.visible ? this.hide() : this.show();
+    super.toggle();
     return this;
   }
 }

@@ -1,6 +1,9 @@
 import { TCategory } from "./typings/timeline";
 import { numberToTime } from "./format";
 
+/**
+ * Categories are the colored ranges acting as containers for events
+ */
 export class Category {
   private _data: TCategory = { backColor: "#000", end: 0, foreColor: "#fff", name: "Unnamed", points: [], start: 0 };
   private _observer: ResizeObserver;

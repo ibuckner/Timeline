@@ -6,13 +6,6 @@ export type TPoint = {
   wait: number
 };
 
-export type TLegendItem = {
-  backColor: string,
-  el?: HTMLElement,
-  foreColor: string,
-  name: string
-};
-
 export type TCategory = {
   backColor: string,
   el?: HTMLElement,
@@ -25,6 +18,12 @@ export type TCategory = {
   points: TPoint[],
   start: number,
   stat?: TStat
+};
+
+export type TCategoryLabel = {
+  backColor: string,
+  foreColor: string,
+  name: string
 };
 
 export type TSequence = {
