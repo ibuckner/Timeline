@@ -871,15 +871,21 @@
           this._data = { time: 0, wait: 0 };
           this._observer = new ResizeObserver(() => Point.updateXY(this._data));
           window.addEventListener("category-select", () => {
-              var _a, _b, _c, _d;
+              var _a, _b, _c, _d, _e, _f, _g, _h;
               if ((_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.contains("highlight")) {
                   (_d = (_c = this._data) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("highlight");
               }
+              if ((_f = (_e = this._data) === null || _e === void 0 ? void 0 : _e.el) === null || _f === void 0 ? void 0 : _f.classList.contains("filtered")) {
+                  (_h = (_g = this._data) === null || _g === void 0 ? void 0 : _g.el) === null || _h === void 0 ? void 0 : _h.classList.remove("filtered");
+              }
           });
           window.addEventListener("sequence-select", () => {
-              var _a, _b, _c, _d;
+              var _a, _b, _c, _d, _e, _f, _g, _h;
               if ((_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.contains("highlight")) {
                   (_d = (_c = this._data) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("highlight");
+              }
+              if ((_f = (_e = this._data) === null || _e === void 0 ? void 0 : _e.el) === null || _f === void 0 ? void 0 : _f.classList.contains("filtered")) {
+                  (_h = (_g = this._data) === null || _g === void 0 ? void 0 : _g.el) === null || _h === void 0 ? void 0 : _h.classList.remove("filtered");
               }
           });
       }
@@ -900,13 +906,29 @@
               this._data.el = document.createElement("div");
               this._data.el.classList.add("pt");
               this._data.el.addEventListener("click", e => {
-                  var _a, _b, _c, _d;
+                  var _a, _b;
                   e.stopPropagation();
-                  const eventName = ((_b = (_a = this._data) === null || _a === void 0 ? void 0 : _a.el) === null || _b === void 0 ? void 0 : _b.classList.contains("highlight")) ? "point-unselect" : "point-select";
-                  if (eventName === "point-unselect") {
-                      (_d = (_c = this._data) === null || _c === void 0 ? void 0 : _c.el) === null || _d === void 0 ? void 0 : _d.classList.remove("highlight");
+                  if ((_a = this._data) === null || _a === void 0 ? void 0 : _a.el) {
+                      const eventName = this._data.el.classList.contains("highlight") ? "point-unselect" : "point-select";
+                      const points = (_b = this._data.el.parentNode) === null || _b === void 0 ? void 0 : _b.querySelectorAll(".pt");
+                      if (points) {
+                          if (eventName === "point-unselect") {
+                              Array.from(points).forEach(pt => pt.classList.remove("filtered", "highlight"));
+                          }
+                          else {
+                              Array.from(points).forEach(pt => {
+                                  pt.classList.remove("filtered", "highlight");
+                                  if (pt === this._data.el) {
+                                      pt.classList.add("highlight");
+                                  }
+                                  else {
+                                      pt.classList.add("filtered");
+                                  }
+                              });
+                          }
+                          dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
+                      }
                   }
-                  dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
               });
               container.appendChild(this._data.el);
           }
@@ -1037,15 +1059,6 @@
    * @param container - parent element of graphic
    */
   function drawSequences(sequences, container) {
-      window.addEventListener("point-select", (event) => {
-          const el = event.detail.el;
-          if (el) {
-              Array.from(document.querySelectorAll(".pt.highlight")).forEach(el => {
-                  el.classList.remove("highlight");
-              });
-              el.classList.add("highlight");
-          }
-      });
       sequences.forEach((seq) => { seq.draw(container); });
       sequences.forEach((seq) => {
           const d = seq.data();

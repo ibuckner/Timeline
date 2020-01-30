@@ -1,0 +1,9 @@
+{
+	"version": 3,
+	"file": "../docs/dist/css/sequence.css",
+	"sources": [
+		"../src/css/sequence.scss"
+	],
+	"names": [],
+	"mappings": "AAAA,AAAA,SAAS,CAAC;EACR,WAAW,EAAE,OAAO;EACpB,gBAAgB,EAAE,IAAI;EACtB,OAAO,EAAE,IAAI;EACb,cAAc,EAAE,GAAG;EACnB,eAAe,EAAE,OAAO;EACxB,MAAM,EAAE,eAAe;EACvB,OAAO,EAAE,SAAS;EAClB,UAAU,EAAE,yBAAyB;EACrC,KAAK,EAAE,gBAAgB;CACxB"
+}

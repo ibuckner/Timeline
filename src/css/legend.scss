@@ -22,7 +22,7 @@ h3 {
   z-index: 10000;
 }
 
-.legend.hidden { transform: translate(100%, -50%) }
+.legend.hidden { transform: translate(100%, -50%); }
 
 .menu-legend {
   align-items: flex-end;
@@ -30,17 +30,17 @@ h3 {
   flex-direction: row;
   flex-wrap: nowrap;
   justify-content: space-between;
-  width: 100%
+  width: 100%;
 }
 
 .menu-legend .menu-item {
   cursor: pointer;
   font-size: 0.9em;
   font-variant: small-caps;
-  user-select: none
+  user-select: none;
 }
 
-.menu-legend .menu-item:hover { color: #900 }
+.menu-legend .menu-item:hover { color: #900; }
 
 .legend-items {
   display: flex;
@@ -48,7 +48,7 @@ h3 {
   flex-grow: 1;
   flex-wrap: wrap;
   justify-content: flex-start;
-  transition: all 0.6s ease-in-out
+  transition: all 0.6s ease-in-out;
 }
 
 .legend-item {
@@ -64,5 +64,5 @@ h3 {
   padding: 3px 1px 3px 1px;
   text-align: center;
   transition: width 500ms ease-in-out;
-  user-select: none
+  user-select: none;
 }

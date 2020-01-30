@@ -104,16 +104,6 @@ function linkData(data: TSequence[], sequences?: Sequence[] | undefined): Sequen
  * @param container - parent element of graphic
  */
 function drawSequences(sequences: Sequence[], container: HTMLElement): void {
-  window.addEventListener("point-select", (event: any) => {
-    const el = event.detail.el as HTMLElement;
-    if (el) {
-      Array.from(document.querySelectorAll(".pt.highlight")).forEach(el => {
-        el.classList.remove("highlight");
-      });  
-      el.classList.add("highlight");
-    }  
-  });
-
   sequences.forEach((seq: Sequence) => { seq.draw(container); });
   sequences.forEach((seq: Sequence) => {
     const d = seq.data();

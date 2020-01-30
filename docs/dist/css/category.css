@@ -3,17 +3,17 @@
   display: inline-block;
   margin-right: 10px;
   position: relative;
-  transition: all 500ms ease-in-out;
-}
+  -webkit-transition: all 500ms ease-in-out;
+  transition: all 500ms ease-in-out; }
 
 .median {
-  border-width: 1px;
   border-style: dashed;
+  border-width: 1px;
   height: 100%;
   left: 0;
   position: absolute;
   top: 0;
-  transition: all 500ms ease-in-out; 
+  -webkit-transition: all 500ms ease-in-out;
+  transition: all 500ms ease-in-out;
   width: 0;
-  z-index: 400
-}
+  z-index: 400; }

@@ -1,0 +1,16 @@
+.sequence {
+  -webkit-box-align: stretch;
+          align-items: stretch;
+  background-color: #eee;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+          flex-direction: row;
+  -webkit-box-pack: stretch;
+          justify-content: stretch;
+  margin: 2px 1px 3px 1px;
+  padding: 0 0 0 8px;
+  -webkit-transition: opacity 500ms ease-in-out;
+  transition: opacity 500ms ease-in-out;
+  width: calc(100% - 6px); }

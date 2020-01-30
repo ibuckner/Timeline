@@ -17,12 +17,18 @@ export class Point {
     window.addEventListener("category-select", () => {
       if (this._data?.el?.classList.contains("highlight")) {
         this._data?.el?.classList.remove("highlight");
-      } 
+      }
+      if (this._data?.el?.classList.contains("filtered")) {
+        this._data?.el?.classList.remove("filtered");
+      }
     });
 
     window.addEventListener("sequence-select", () => {
       if (this._data?.el?.classList.contains("highlight")) {
         this._data?.el?.classList.remove("highlight");
+      }
+      if (this._data?.el?.classList.contains("filtered")) {
+        this._data?.el?.classList.remove("filtered");
       } 
     });
   }
@@ -45,11 +51,25 @@ export class Point {
       this._data.el.classList.add("pt");
       this._data.el.addEventListener("click", e => {
         e.stopPropagation();
-        const eventName: string = this._data?.el?.classList.contains("highlight") ? "point-unselect" : "point-select";
-        if (eventName === "point-unselect") {
-          this._data?.el?.classList.remove("highlight");
+        if (this._data?.el) {
+          const eventName: string = this._data.el.classList.contains("highlight") ? "point-unselect" : "point-select";
+          const points = this._data.el.parentNode?.querySelectorAll(".pt");
+          if (points) {
+            if (eventName === "point-unselect") {
+              Array.from(points).forEach(pt => pt.classList.remove("filtered", "highlight"));
+            } else {
+              Array.from(points).forEach(pt => {
+                pt.classList.remove("filtered", "highlight");
+                if (pt === this._data.el) {
+                  pt.classList.add("highlight");
+                } else {
+                  pt.classList.add("filtered");
+                }
+              });
+            }
+            dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
+          }          
         }
-        dispatchEvent(new CustomEvent(eventName, { detail: this._data }));
       });
       container.appendChild(this._data.el);
     }

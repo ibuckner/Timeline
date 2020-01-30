@@ -1,11 +1,15 @@
 
 html {
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
-.disabled { cursor: not-allowed; pointer-events: none }
-.filtered { opacity: 0.15 }
-.hidden { opacity: 0 !important }
+.disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.filtered { opacity: 0.15; }
+.hidden { opacity: 0 !important; }
 
 .container {
   background-color: #fff;
@@ -27,7 +31,7 @@ html {
   justify-content: flex-end;
 }
 
-.timeline { 
+.timeline {
   display: flex;
   flex-direction: column;
   flex-grow: 8;
