@@ -600,11 +600,13 @@
           const filters = [];
           stateList.forEach((item) => {
               const el = document.querySelector(`[data-label="${item.label}"]`);
-              if (item.state.filtered) {
-                  el.classList.add("filtered");
-              }
-              else {
-                  el.classList.remove("filtered");
+              if (el) {
+                  if (item.state.filtered) {
+                      el.classList.add("filtered");
+                  }
+                  else {
+                      el.classList.remove("filtered");
+                  }
               }
               if (item.state.selected) {
                   filters.push(item.label);
@@ -831,15 +833,20 @@
           return this;
       }
       _addQuantiles() {
-          var _a, _b;
-          const med = document.createElement("div");
-          med.classList.add("median");
-          med.textContent = "";
-          med.style.backgroundColor = this._data.backColor;
-          med.style.borderColor = this._data.foreColor;
-          med.title = `Median is ${(_a = this._data.stat) === null || _a === void 0 ? void 0 : _a.median} minutes`;
-          (_b = this._data.el) === null || _b === void 0 ? void 0 : _b.appendChild(med);
-          Category.updateMedianXY(this._data);
+          var _a;
+          if (this._data.el) {
+              let med = this._data.el.querySelector(".median");
+              if (med === null) {
+                  med = document.createElement("div");
+                  med.classList.add("median");
+                  med.textContent = "";
+                  med.style.backgroundColor = this._data.backColor;
+                  med.style.borderColor = this._data.foreColor;
+                  this._data.el.appendChild(med);
+              }
+              med.title = `Median is ${(_a = this._data.stat) === null || _a === void 0 ? void 0 : _a.median} minutes`;
+              Category.updateMedianXY(this._data);
+          }
       }
       static updateMedianXY(d) {
           var _a, _b, _c;

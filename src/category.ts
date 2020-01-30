@@ -82,14 +82,19 @@ export class Category {
   }
 
   private _addQuantiles(): void {
-    const med = document.createElement("div");
-    med.classList.add("median");
-    med.textContent = "";
-    med.style.backgroundColor = this._data.backColor;
-    med.style.borderColor = this._data.foreColor;
-    med.title = `Median is ${this._data.stat?.median} minutes`;
-    this._data.el?.appendChild(med);
-    Category.updateMedianXY(this._data);
+    if (this._data.el) {
+      let med: HTMLElement | null = this._data.el.querySelector(".median");
+      if (med === null) {
+        med = document.createElement("div");
+        med.classList.add("median");
+        med.textContent = "";
+        med.style.backgroundColor = this._data.backColor;
+        med.style.borderColor = this._data.foreColor;
+        this._data.el.appendChild(med);
+      }    
+      med.title = `Median is ${this._data.stat?.median} minutes`;
+      Category.updateMedianXY(this._data);
+    }
   }
 
   public static updateMedianXY(d: any): void {

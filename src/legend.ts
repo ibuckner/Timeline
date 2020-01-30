@@ -119,10 +119,12 @@ class Legend extends Control {
 
     stateList.forEach((item: { label: string, state: TSlicerState }) => {
       const el = document.querySelector(`[data-label="${item.label}"]`) as HTMLElement;
-      if (item.state.filtered) {
-        el.classList.add("filtered");
-      } else {
-        el.classList.remove("filtered");
+      if (el) {
+        if (item.state.filtered) {
+          el.classList.add("filtered");
+        } else {
+          el.classList.remove("filtered");
+        }
       }
       if (item.state.selected) {
         filters.push(item.label);
