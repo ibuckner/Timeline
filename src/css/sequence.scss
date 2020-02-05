@@ -1,11 +1,12 @@
+@use 'globals';
+
 .sequence {
-  align-items: stretch;
+  @include globals.transition(opacity);
+  @include globals.fx;
+  @include globals.fx-stretch;
+
   background-color: #eee;
-  display: flex;
-  flex-direction: row;
-  justify-content: stretch;
   margin: 2px 1px 3px 1px;
   padding: 0 0 0 8px;
-  transition: opacity 500ms ease-in-out;
   width: calc(100% - 6px);
 }

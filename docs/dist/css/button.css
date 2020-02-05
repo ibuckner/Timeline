@@ -1,22 +1,25 @@
 .menu-button {
-  background-color: #fff;
-  border: 1px solid #999;
+  transition: all 500ms ease-in-out;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   cursor: pointer;
+  user-select: none;
+  border: 1px solid #999;
+  z-index: 1000;
+  background-color: #fff;
   margin: 0 10px 0 10px;
   padding: 5px;
-  text-align: center;
-  -webkit-transition: all 0.6s ease-in-out;
-  transition: all 0.6s ease-in-out;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
   width: 100px;
-  z-index: 10000; }
+}
 
 .menu-button.hidden {
-  opacity: 0;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none; }
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0 !important;
+}
+
+/*# sourceMappingURL=button.css.map */

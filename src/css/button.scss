@@ -1,19 +1,21 @@
-$white: #fff;
+@use 'globals';
 
 .menu-button {
-  background-color: $white;
-  border: 1px solid #999;
-  cursor: pointer;
+  @include globals.transition;
+  @include globals.fx;
+  @include globals.fx-centered;
+  @include globals.interactive;
+  @include globals.no-text-select;
+  @include globals.border($color: #999);
+  @include globals.layer(10);
+
+  background-color: globals.$primary-bg-color;
   margin: 0 10px 0 10px;
   padding: 5px;
-  user-select: none;
-  z-index: 10000;
-  text-align: center;
-  transition: all 0.6s ease-in-out;
   width: 100px;
 }
 
 .menu-button.hidden {
-  opacity: 0;
-  user-select: none;
+  @include globals.disabled;
+  @include globals.hidden;
 }
