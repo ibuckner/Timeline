@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
-    "@types/jest": "^25.1.1",
+    "@types/jest": "^25.1.2",
     "@typescript-eslint/eslint-plugin": "^2.19.0",
     "@typescript-eslint/parser": "^2.19.0",
     "autoprefixer": "^9.7.4",
@@ -50,7 +50,7 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.25.3",
     "sass": "^1.25.0",
-    "stylelint": "^13.0.0",
+    "stylelint": "^13.1.0",
     "ts-jest": "^25.2.0",
     "typescript": "^3.7.5"
   },
