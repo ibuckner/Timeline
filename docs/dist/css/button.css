@@ -1,25 +1,33 @@
 .menu-button {
-  transition: all 500ms ease-in-out;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  cursor: pointer;
-  user-select: none;
-  border: 1px solid #999;
-  z-index: 1000;
+          align-items: center;
   background-color: #fff;
+  border: 1px solid #999;
+  -webkit-box-align: center;
+  -webkit-box-direction: normal;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: center;
+  cursor: pointer;
+  display: -webkit-box;
+  display: flex;
+          flex-direction: row;
+  flex-wrap: nowrap;
+          justify-content: center;
   margin: 0 10px 0 10px;
   padding: 5px;
+  text-align: center;
+  -webkit-transition: all 500ms ease-in-out;
+  transition: all 500ms ease-in-out;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   width: 100px;
+  z-index: 1000;
 }
 
 .menu-button.hidden {
   cursor: not-allowed;
-  pointer-events: none;
   opacity: 0 !important;
+  pointer-events: none;
 }
-
 /*# sourceMappingURL=button.css.map */

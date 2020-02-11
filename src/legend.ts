@@ -1,5 +1,5 @@
 import { TCategoryLabel } from "./typings/timeline";
-import { Slicer, TSlicerState } from "@buckneri/js-lib-slicer";
+import { Slicer, TSlicerState, SlicerModifier } from "@buckneri/js-lib-slicer";
 import { Control } from "./control";
 import { select } from "select";
 
@@ -83,9 +83,10 @@ class Legend extends Control {
   /**
    * Handles the click event on legend items
    */
-  public handleClick(e: any): void {
+  public handleClick(e: MouseEvent): void {
     const key: string = (e.target as HTMLElement).dataset.label || "";
-    this._slicer.toggle(key, e.ctrlKey);
+    const m: number = e.ctrlKey ? SlicerModifier.CTRL_KEY : e.shiftKey ? SlicerModifier.SHIFT_KEY : SlicerModifier.NO_KEY;
+    this._slicer.toggle(key, m);  
     this.state();
   }
 
@@ -102,36 +103,29 @@ class Legend extends Control {
   }
 
   public state(): Legend {
-    const stateList: { label: string, state: TSlicerState }[] = [];
-
-    this.filterOn = false;
-    this._slicer.data.forEach((value: TSlicerState, key: string) => {
-      stateList.push({ label: key, state: value });
-      if (value.filtered) {
-        this.filterOn = true;
-      }
-    });
+    this.filterOn = this._slicer.selected === 0 ? false : true;
 
     this.filterOn
       ? this.btnFilter.classList.remove("hidden")
       : this.btnFilter.classList.add("hidden");
-    const filters: string[] = [];
 
-    stateList.forEach((item: { label: string, state: TSlicerState }) => {
-      const el = document.querySelector(`[data-label="${item.label}"]`) as HTMLElement;
+    const filters: string[] = [];
+    
+    this._slicer.data.forEach((state: TSlicerState, key: string) => {
+      const el = document.querySelector(`[data-label="${key}"]`) as HTMLElement;
       if (el) {
-        if (item.state.filtered) {
+        if (state.filtered) {
           el.classList.add("filtered");
         } else {
           el.classList.remove("filtered");
         }
       }
-      if (item.state.selected) {
-        filters.push(item.label);
+      if (state.selected) {
+        filters.push(key);
       }
     });
 
-    const eventName: string = (filters.length === 0) ? "legend-filter-clear" : "legend-filter";
+    const eventName: string = this.filterOn ? "legend-filter" : "legend-filter-clear";
     window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
 
     return this;

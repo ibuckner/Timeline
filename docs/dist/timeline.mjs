@@ -362,16 +362,19 @@ class DemoData {
     }
 }
 
+var SlicerModifier;
+(function (SlicerModifier) {
+    SlicerModifier[SlicerModifier["NO_KEY"] = 0] = "NO_KEY";
+    SlicerModifier[SlicerModifier["CTRL_KEY"] = 1] = "CTRL_KEY";
+    SlicerModifier[SlicerModifier["SHIFT_KEY"] = 2] = "SHIFT_KEY";
+})(SlicerModifier || (SlicerModifier = {}));
 class Slicer {
     constructor(list) {
         this._ = new Map();
-        this._active = false;
+        this.selected = 0;
         if (list) {
             this.data = list;
         }
-    }
-    get active() {
-        return this._active;
     }
     get data() {
         return this._;
@@ -389,48 +392,105 @@ class Slicer {
         this._.forEach((_, key) => {
             this._.set(key, { filtered: false, selected: false });
         });
-        this._active = false;
+        this.selected = 0;
+        this.lastSelection = undefined;
         return this;
     }
-    toggle(item, ctrlKey = false) {
-        this._.forEach((value, key) => {
-            if (item !== key) {
-                value.selected = ctrlKey ? value.selected : false;
-                value.filtered = ctrlKey ? false : true;
+    toggle(item, modifier = SlicerModifier.NO_KEY) {
+        if (modifier === SlicerModifier.SHIFT_KEY) {
+            return this.toggleRange(item);
+        }
+        else if (modifier === SlicerModifier.CTRL_KEY) {
+            return this.toggleCumulative(item);
+        }
+        else {
+            return this.toggleSingle(item);
+        }
+    }
+    toggleCumulative(key) {
+        const state = this._.get(key);
+        if (state) {
+            state.selected = !state.selected;
+            if (state.selected) {
+                ++this.selected;
             }
             else {
-                if (value.selected) {
-                    value.selected = false;
-                    value.filtered = false;
-                }
-                else {
-                    value.selected = !value.selected;
-                    value.filtered = !value.selected;
-                }
+                --this.selected;
             }
-            this._.set(key, value);
-        });
-        const selectionList = [];
-        let filtered = 0;
-        this._.forEach((value, key) => {
-            if (value.selected) {
-                selectionList.push(key);
-            }
-            if (value.filtered) {
-                ++filtered;
-            }
-        });
-        this._active = selectionList.length > 0 ? true : false;
-        if (filtered === this._.size ||
-            selectionList.length === 0 ||
-            selectionList.length === this._.size) {
+            this._.set(key, state);
+        }
+        if (this.selected < 1) {
             this.clear();
         }
-        else if (selectionList.length > 0 && filtered === 0) {
+        else {
             this._.forEach((value, key) => {
                 value.filtered = !value.selected;
                 this._.set(key, value);
             });
+            this.lastSelection = key;
+        }
+        return this;
+    }
+    toggleRange(item) {
+        if (item === this.lastSelection) {
+            this.clear();
+        }
+        else {
+            let state = 0;
+            this.selected = 0;
+            this._.forEach((value, key) => {
+                if (state === 1) {
+                    if (item === key || this.lastSelection === key) {
+                        state = -1;
+                    }
+                    value = { filtered: false, selected: true };
+                    ++this.selected;
+                }
+                else if (state === 0) {
+                    if (item === key || this.lastSelection === key) {
+                        state = 1;
+                        value = { filtered: false, selected: true };
+                        ++this.selected;
+                    }
+                    else {
+                        value = { filtered: true, selected: false };
+                    }
+                }
+                else {
+                    value = { filtered: true, selected: false };
+                }
+                this._.set(key, value);
+            });
+            this.lastSelection = item;
+            if (this.selected === 0) {
+                this._.forEach((value, key) => {
+                    value = { filtered: true, selected: false };
+                    this._.set(key, value);
+                });
+            }
+        }
+        return this;
+    }
+    toggleSingle(item) {
+        const state = this._.get(item);
+        if (state) {
+            if (state.selected) {
+                this.clear();
+            }
+            else {
+                this._.forEach((value, key) => {
+                    if (item === key) {
+                        value.selected = !value.selected;
+                        value.filtered = !value.selected;
+                    }
+                    else {
+                        value = { filtered: true, selected: false };
+                    }
+                    this._.set(key, value);
+                });
+                this.selected = 1;
+                this.lastSelection = item;
+            }
         }
         return this;
     }
@@ -569,7 +629,8 @@ class Legend extends Control {
      */
     handleClick(e) {
         const key = e.target.dataset.label || "";
-        this._slicer.toggle(key, e.ctrlKey);
+        const m = e.ctrlKey ? SlicerModifier.CTRL_KEY : e.shiftKey ? SlicerModifier.SHIFT_KEY : SlicerModifier.NO_KEY;
+        this._slicer.toggle(key, m);
         this.state();
     }
     hide() {
@@ -583,33 +644,26 @@ class Legend extends Control {
         return this;
     }
     state() {
-        const stateList = [];
-        this.filterOn = false;
-        this._slicer.data.forEach((value, key) => {
-            stateList.push({ label: key, state: value });
-            if (value.filtered) {
-                this.filterOn = true;
-            }
-        });
+        this.filterOn = this._slicer.selected === 0 ? false : true;
         this.filterOn
             ? this.btnFilter.classList.remove("hidden")
             : this.btnFilter.classList.add("hidden");
         const filters = [];
-        stateList.forEach((item) => {
-            const el = document.querySelector(`[data-label="${item.label}"]`);
+        this._slicer.data.forEach((state, key) => {
+            const el = document.querySelector(`[data-label="${key}"]`);
             if (el) {
-                if (item.state.filtered) {
+                if (state.filtered) {
                     el.classList.add("filtered");
                 }
                 else {
                     el.classList.remove("filtered");
                 }
             }
-            if (item.state.selected) {
-                filters.push(item.label);
+            if (state.selected) {
+                filters.push(key);
             }
         });
-        const eventName = (filters.length === 0) ? "legend-filter-clear" : "legend-filter";
+        const eventName = this.filterOn ? "legend-filter" : "legend-filter-clear";
         window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
         return this;
     }

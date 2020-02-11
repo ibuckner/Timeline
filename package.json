@@ -1,6 +1,6 @@
 {
   "name": "timeline",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Visualisation for observing encounters by time",
   "author": "NEL",
   "keywords": [
@@ -29,14 +29,14 @@
   },
   "dependencies": {
     "@buckneri/js-lib-random": "^0.1.4",
-    "@buckneri/js-lib-slicer": "0.0.5",
+    "@buckneri/js-lib-slicer": "^0.1.3",
     "d3-array": "^2.4.0"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
     "@types/jest": "^25.1.2",
-    "@typescript-eslint/eslint-plugin": "^2.19.0",
-    "@typescript-eslint/parser": "^2.19.0",
+    "@typescript-eslint/eslint-plugin": "^2.19.2",
+    "@typescript-eslint/parser": "^2.19.2",
     "autoprefixer": "^9.7.4",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^21.0.0",

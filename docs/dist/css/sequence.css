@@ -1,14 +1,14 @@
 .sequence {
-  -webkit-box-align: stretch;
           align-items: stretch;
   background-color: #eee;
+  -webkit-box-align: stretch;
+  -webkit-box-direction: normal;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: stretch;
   display: -webkit-box;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
           flex-direction: row;
   flex-wrap: nowrap;
-  -webkit-box-pack: stretch;
           justify-content: stretch;
   margin: 2px 1px 3px 1px;
   padding: 0 0 0 8px;
@@ -16,5 +16,4 @@
   transition: opacity 500ms ease-in-out;
   width: calc(100% - 6px);
 }
-
 /*# sourceMappingURL=sequence.css.map */
