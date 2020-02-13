@@ -388,12 +388,30 @@ class Slicer {
             });
         }
     }
+    add(key) {
+        if (!this._.has(key)) {
+            let state = { filtered: false, selected: false };
+            if (this.selected > 0) {
+                state.filtered = true;
+            }
+            this._.set(key, state);
+        }
+        return this;
+    }
     clear() {
         this._.forEach((_, key) => {
             this._.set(key, { filtered: false, selected: false });
         });
         this.selected = 0;
         this.lastSelection = undefined;
+        return this;
+    }
+    remove(key) {
+        const state = this._.get(key);
+        if (state && state.selected) {
+            --this.selected;
+        }
+        this._.delete(key);
         return this;
     }
     toggle(item, modifier = SlicerModifier.NO_KEY) {
@@ -419,7 +437,7 @@ class Slicer {
             }
             this._.set(key, state);
         }
-        if (this.selected < 1) {
+        if (this.selected === 0 || this.selected === this._.size) {
             this.clear();
         }
         else {
@@ -462,11 +480,8 @@ class Slicer {
                 this._.set(key, value);
             });
             this.lastSelection = item;
-            if (this.selected === 0) {
-                this._.forEach((value, key) => {
-                    value = { filtered: true, selected: false };
-                    this._.set(key, value);
-                });
+            if (this.selected === 0 || this.selected === this._.size) {
+                this.clear();
             }
         }
         return this;
