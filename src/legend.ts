@@ -1,17 +1,14 @@
 import { TCategoryLabel } from "./typings/timeline";
-import { Slicer, TSlicerState, SlicerModifier } from "@buckneri/js-lib-slicer";
+import * as components from "@buckneri/web-components";
 import { Control } from "./control";
 import { select } from "select";
 
 class Legend extends Control {
   public btnClose: HTMLElement;
   public btnFilter: HTMLElement;
-  public filterOn: boolean = false;
+  public slicer: HTMLNelSlicerElement;
   public title: HTMLElement;
-
-  private _: TCategoryLabel[] = [];
-  private _slicer: Slicer<string> = new Slicer<string>();
-
+  
   constructor(selector: HTMLElement | string) {
     super(selector);
     this.element = document.createElement("div");
@@ -38,56 +35,30 @@ class Legend extends Control {
     this.title.textContent = "Categories";
     this.element.appendChild(this.title);
 
-    const items = document.createElement("div");
-    items.classList.add("legend-items");
-    this.element.appendChild(items);
+    this.slicer = document.createElement("nel-slicer");
+    this.slicer.classList.add("slicer");
+    this.element.appendChild(this.slicer);
   }
 
   /**
    * Clear any filtered legend items
    */
-  public clear(): Legend {
-    this._slicer.clear();
-    Array.from(this.element.querySelectorAll(".filtered"))
-      .forEach(el => el.classList.remove("filtered"));
-    this.btnFilter.classList.add("hidden");
+  public async clear(): Promise<Legend> {
+    this.slicer.clear = true;
     window.dispatchEvent(new CustomEvent("legend-filter-clear", { detail: [] }));
-    return this;
-  }
-
-  /**
-   * Populates the legend with categories
-   * @param data - list of sequences
-   */
-  public data(data: TCategoryLabel[]): Legend {
-    this._ = data;
-    this._slicer.data = this._.map(d => d.name);
     return this;
   }
 
   /**
    * Draws the legend items
    */
-  public draw(): Legend {
-    this._.forEach((item: TCategoryLabel) => {
+  public draw(items: TCategoryLabel[]): Legend {
+    items.forEach((item: TCategoryLabel) => {
       if (document.querySelector(`[data-label="${item.name}"]`) === null) {
         const el = this._addItem(item.name, item.foreColor, item.backColor);
-        if (this.filterOn) {
-          el.classList.add("filtered");
-        }
       }
     });
     return this;
-  }
-
-  /**
-   * Handles the click event on legend items
-   */
-  public handleClick(e: MouseEvent): void {
-    const key: string = (e.target as HTMLElement).dataset.label || "";
-    const m: number = e.ctrlKey ? SlicerModifier.CTRL_KEY : e.shiftKey ? SlicerModifier.SHIFT_KEY : SlicerModifier.NO_KEY;
-    this._slicer.toggle(key, m);  
-    this.state();
   }
 
   public hide(): Legend {
@@ -103,15 +74,11 @@ class Legend extends Control {
   }
 
   public state(): Legend {
-    this.filterOn = this._slicer.selected === 0 ? false : true;
-
-    this.filterOn
-      ? this.btnFilter.classList.remove("hidden")
-      : this.btnFilter.classList.add("hidden");
+   // this.filterOn = this._slicer.selected === 0 ? false : true;
 
     const filters: string[] = [];
-    
-    this._slicer.data.forEach((state: TSlicerState, key: string) => {
+    /*
+    this._.forEach((state: any, key: any) => {
       const el = document.querySelector(`[data-label="${key}"]`) as HTMLElement;
       if (el) {
         if (state.filtered) {
@@ -124,9 +91,7 @@ class Legend extends Control {
         filters.push(key);
       }
     });
-
-    const eventName: string = this.filterOn ? "legend-filter" : "legend-filter-clear";
-    window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
+    */
 
     return this;
   }
@@ -138,14 +103,12 @@ class Legend extends Control {
 
   private _addItem(label: string, foreColor: string, backColor: string): HTMLElement {
     const li = document.createElement("div");
-    li.classList.add("legend-item");
+    li.classList.add("slicer-item");
     li.style.backgroundColor = backColor;
     li.style.borderColor = foreColor;
     li.textContent = label;
     li.dataset.label = label;
-    li.addEventListener("click", e => this.handleClick(e));
-    (this.element.querySelector(".legend-items") as HTMLElement)
-      .appendChild(li);
+    this.slicer.appendChild(li);
     return li;
   }
 }

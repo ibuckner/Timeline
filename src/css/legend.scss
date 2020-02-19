@@ -44,7 +44,7 @@ h3 {
 
 .menu-legend .menu-item:hover { color: #900; }
 
-.legend-items {
+.slicer {
   @include globals.transition;
   @include globals.fx($dir: column);
 
@@ -52,7 +52,7 @@ h3 {
   justify-content: flex-start;
 }
 
-.legend-item {
+.slicer-item {
   @include globals.fx;
   @include globals.fx-centered;
   @include globals.transition(width);

@@ -365,153 +365,28 @@
       }
   }
 
-  var SlicerModifier;
-  (function (SlicerModifier) {
-      SlicerModifier[SlicerModifier["NO_KEY"] = 0] = "NO_KEY";
-      SlicerModifier[SlicerModifier["CTRL_KEY"] = 1] = "CTRL_KEY";
-      SlicerModifier[SlicerModifier["SHIFT_KEY"] = 2] = "SHIFT_KEY";
-  })(SlicerModifier || (SlicerModifier = {}));
-  class Slicer {
-      constructor(list) {
-          this._ = new Map();
-          this.selected = 0;
-          if (list) {
-              this.data = list;
-          }
-      }
-      get data() {
-          return this._;
-      }
-      set data(list) {
-          if (Array.isArray(list)) {
-              list.forEach((item) => {
-                  if (!this._.has(item)) {
-                      this._.set(item, { filtered: false, selected: false });
-                  }
-              });
-          }
-      }
-      add(key) {
-          if (!this._.has(key)) {
-              let state = { filtered: false, selected: false };
-              if (this.selected > 0) {
-                  state.filtered = true;
-              }
-              this._.set(key, state);
-          }
-          return this;
-      }
-      clear() {
-          this._.forEach((_, key) => {
-              this._.set(key, { filtered: false, selected: false });
-          });
-          this.selected = 0;
-          this.lastSelection = undefined;
-          return this;
-      }
-      remove(key) {
-          const state = this._.get(key);
-          if (state && state.selected) {
-              --this.selected;
-          }
-          this._.delete(key);
-          return this;
-      }
-      toggle(item, modifier = SlicerModifier.NO_KEY) {
-          if (modifier === SlicerModifier.SHIFT_KEY) {
-              return this.toggleRange(item);
-          }
-          else if (modifier === SlicerModifier.CTRL_KEY) {
-              return this.toggleCumulative(item);
-          }
-          else {
-              return this.toggleSingle(item);
-          }
-      }
-      toggleCumulative(key) {
-          const state = this._.get(key);
-          if (state) {
-              state.selected = !state.selected;
-              if (state.selected) {
-                  ++this.selected;
-              }
-              else {
-                  --this.selected;
-              }
-              this._.set(key, state);
-          }
-          if (this.selected === 0 || this.selected === this._.size) {
-              this.clear();
-          }
-          else {
-              this._.forEach((value, key) => {
-                  value.filtered = !value.selected;
-                  this._.set(key, value);
-              });
-              this.lastSelection = key;
-          }
-          return this;
-      }
-      toggleRange(item) {
-          if (item === this.lastSelection) {
-              this.clear();
-          }
-          else {
-              let state = 0;
-              this.selected = 0;
-              this._.forEach((value, key) => {
-                  if (state === 1) {
-                      if (item === key || this.lastSelection === key) {
-                          state = -1;
-                      }
-                      value = { filtered: false, selected: true };
-                      ++this.selected;
-                  }
-                  else if (state === 0) {
-                      if (item === key || this.lastSelection === key) {
-                          state = 1;
-                          value = { filtered: false, selected: true };
-                          ++this.selected;
-                      }
-                      else {
-                          value = { filtered: true, selected: false };
-                      }
-                  }
-                  else {
-                      value = { filtered: true, selected: false };
-                  }
-                  this._.set(key, value);
-              });
-              this.lastSelection = item;
-              if (this.selected === 0 || this.selected === this._.size) {
-                  this.clear();
-              }
-          }
-          return this;
-      }
-      toggleSingle(item) {
-          const state = this._.get(item);
-          if (state) {
-              if (state.selected) {
-                  this.clear();
-              }
-              else {
-                  this._.forEach((value, key) => {
-                      if (item === key) {
-                          value.selected = !value.selected;
-                          value.filtered = !value.selected;
-                      }
-                      else {
-                          value = { filtered: true, selected: false };
-                      }
-                      this._.set(key, value);
-                  });
-                  this.selected = 1;
-                  this.lastSelection = item;
-              }
-          }
-          return this;
-      }
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation. All rights reserved.
+  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+  this file except in compliance with the License. You may obtain a copy of the
+  License at http://www.apache.org/licenses/LICENSE-2.0
+
+  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+  MERCHANTABLITY OR NON-INFRINGEMENT.
+
+  See the Apache Version 2.0 License for specific language governing permissions
+  and limitations under the License.
+  ***************************************************************************** */
+
+  function __awaiter(thisArg, _arguments, P, generator) {
+      return new (P || (P = Promise))(function (resolve, reject) {
+          function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+          function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+          function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+          step((generator = generator.apply(thisArg, _arguments || [])).next());
+      });
   }
 
   /**
@@ -582,9 +457,6 @@
   class Legend extends Control {
       constructor(selector) {
           super(selector);
-          this.filterOn = false;
-          this._ = [];
-          this._slicer = new Slicer();
           this.element = document.createElement("div");
           this.element.classList.add("legend", "hidden");
           select(selector).appendChild(this.element);
@@ -604,52 +476,30 @@
           this.title = document.createElement("h3");
           this.title.textContent = "Categories";
           this.element.appendChild(this.title);
-          const items = document.createElement("div");
-          items.classList.add("legend-items");
-          this.element.appendChild(items);
+          this.slicer = document.createElement("nel-slicer");
+          this.slicer.classList.add("slicer");
+          this.element.appendChild(this.slicer);
       }
       /**
        * Clear any filtered legend items
        */
       clear() {
-          this._slicer.clear();
-          Array.from(this.element.querySelectorAll(".filtered"))
-              .forEach(el => el.classList.remove("filtered"));
-          this.btnFilter.classList.add("hidden");
-          window.dispatchEvent(new CustomEvent("legend-filter-clear", { detail: [] }));
-          return this;
-      }
-      /**
-       * Populates the legend with categories
-       * @param data - list of sequences
-       */
-      data(data) {
-          this._ = data;
-          this._slicer.data = this._.map(d => d.name);
-          return this;
+          return __awaiter(this, void 0, void 0, function* () {
+              this.slicer.clear = true;
+              window.dispatchEvent(new CustomEvent("legend-filter-clear", { detail: [] }));
+              return this;
+          });
       }
       /**
        * Draws the legend items
        */
-      draw() {
-          this._.forEach((item) => {
+      draw(items) {
+          items.forEach((item) => {
               if (document.querySelector(`[data-label="${item.name}"]`) === null) {
                   const el = this._addItem(item.name, item.foreColor, item.backColor);
-                  if (this.filterOn) {
-                      el.classList.add("filtered");
-                  }
               }
           });
           return this;
-      }
-      /**
-       * Handles the click event on legend items
-       */
-      handleClick(e) {
-          const key = e.target.dataset.label || "";
-          const m = e.ctrlKey ? SlicerModifier.CTRL_KEY : e.shiftKey ? SlicerModifier.SHIFT_KEY : SlicerModifier.NO_KEY;
-          this._slicer.toggle(key, m);
-          this.state();
       }
       hide() {
           super.hide();
@@ -662,27 +512,21 @@
           return this;
       }
       state() {
-          this.filterOn = this._slicer.selected === 0 ? false : true;
-          this.filterOn
-              ? this.btnFilter.classList.remove("hidden")
-              : this.btnFilter.classList.add("hidden");
-          const filters = [];
-          this._slicer.data.forEach((state, key) => {
-              const el = document.querySelector(`[data-label="${key}"]`);
-              if (el) {
-                  if (state.filtered) {
-                      el.classList.add("filtered");
-                  }
-                  else {
-                      el.classList.remove("filtered");
-                  }
+          /*
+          this._.forEach((state: any, key: any) => {
+            const el = document.querySelector(`[data-label="${key}"]`) as HTMLElement;
+            if (el) {
+              if (state.filtered) {
+                el.classList.add("filtered");
+              } else {
+                el.classList.remove("filtered");
               }
-              if (state.selected) {
-                  filters.push(key);
-              }
+            }
+            if (state.selected) {
+              filters.push(key);
+            }
           });
-          const eventName = this.filterOn ? "legend-filter" : "legend-filter-clear";
-          window.dispatchEvent(new CustomEvent(eventName, { detail: filters }));
+          */
           return this;
       }
       toggle() {
@@ -691,14 +535,12 @@
       }
       _addItem(label, foreColor, backColor) {
           const li = document.createElement("div");
-          li.classList.add("legend-item");
+          li.classList.add("slicer-item");
           li.style.backgroundColor = backColor;
           li.style.borderColor = foreColor;
           li.textContent = label;
           li.dataset.label = label;
-          li.addEventListener("click", e => this.handleClick(e));
-          this.element.querySelector(".legend-items")
-              .appendChild(li);
+          this.slicer.appendChild(li);
           return li;
       }
   }
@@ -1043,7 +885,7 @@
       .addRandomSequence()
       .recalc();
   const legend = createLegend(".container");
-  legend.data(demo.categories).draw();
+  legend.draw(demo.categories);
   const inspector = createInspector(".container");
   inspector
       .indirect("point-select", (e) => inspector.draw(e.detail).show())
@@ -1096,7 +938,7 @@
       demo.addRandomSequence().recalc();
       sequences = linkData(demo.data, sequences);
       drawSequences(sequences, timeline);
-      legend.data(demo.categories).state().draw();
+      legend.draw(demo.categories);
   });
   /**
    * Iterates over demo data and updates the sequences array

@@ -25,18 +25,21 @@
     "https": "http-server ./docs -a localhost -p 5000 -o",
     "http": "http-server ./docs -a localhost -p 5000 -o --ssl --key private/key.pem --cert private/cert.pem",
     "test": "npm run https",
-    "test.compile": "jest --config jestconfig.json"
+    "test.compile": "jest --config jestconfig.json",
+    "update-all": "npm run wipe-webc && npm run update-webc",
+    "update-webc": "ncp node_modules/@buckneri/web-components docs/lib/web-components",
+    "wipe-webc": "rimraf docs/lib/web-components"
   },
   "dependencies": {
     "@buckneri/js-lib-random": "^0.1.4",
-    "@buckneri/js-lib-slicer": "^0.1.7",
+    "@buckneri/web-components": "^0.2.4",
     "d3-array": "^2.4.0"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
     "@types/jest": "^25.1.2",
-    "@typescript-eslint/eslint-plugin": "^2.19.2",
-    "@typescript-eslint/parser": "^2.19.2",
+    "@typescript-eslint/eslint-plugin": "^2.20.0",
+    "@typescript-eslint/parser": "^2.20.0",
     "autoprefixer": "^9.7.4",
     "eslint": "^6.8.0",
     "eslint-plugin-jsdoc": "^21.0.0",
@@ -45,13 +48,13 @@
     "npm-run-all": "^4.1.5",
     "postcss-cli": "^7.1.0",
     "postcss-sorting": "^5.0.1",
-    "rollup": "^1.31.0",
+    "rollup": "^1.31.1",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-typescript2": "^0.26.0",
     "sass": "^1.25.0",
-    "stylelint": "^13.1.0",
-    "ts-jest": "^25.2.0",
+    "stylelint": "^13.2.0",
+    "ts-jest": "^25.2.1",
     "typescript": "^3.7.5"
   },
   "main": "rollup.config.js"

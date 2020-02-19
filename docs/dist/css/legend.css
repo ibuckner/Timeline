@@ -62,7 +62,7 @@ h3 {
   color: #900;
 }
 
-.legend-items {
+.slicer {
   -webkit-box-direction: normal;
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
@@ -77,7 +77,7 @@ h3 {
   transition: all 500ms ease-in-out;
 }
 
-.legend-item {
+.slicer-item {
           align-items: center;
   -webkit-box-align: center;
   -webkit-box-direction: normal;

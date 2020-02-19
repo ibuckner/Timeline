@@ -14,7 +14,7 @@ demo.addRandomSequence()
     .recalc();
 
 const legend = createLegend(".container");
-legend.data(demo.categories).draw();
+legend.draw(demo.categories);
 
 const inspector = createInspector(".container");
 inspector
@@ -72,7 +72,7 @@ createButton("btnAddData").direct("click", () => {
   demo.addRandomSequence().recalc();
   sequences = linkData(demo.data, sequences);
   drawSequences(sequences, timeline);
-  legend.data(demo.categories).state().draw();
+  legend.draw(demo.categories);
 });
 
 /**
