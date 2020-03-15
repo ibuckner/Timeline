@@ -33,7 +33,8 @@
   "dependencies": {
     "@buckneri/js-lib-random": "^0.1.4",
     "@buckneri/web-components": "^0.2.4",
-    "d3-array": "^2.4.0"
+    "d3-array": "^2.4.0",
+    "minimist": "^1.2.5"
   },
   "devDependencies": {
     "@types/d3": "^5.7.2",
