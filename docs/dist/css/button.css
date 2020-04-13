@@ -3,11 +3,8 @@
   background-color: #fff;
   border: 1px solid #999;
   -webkit-box-align: center;
-  -webkit-box-direction: normal;
-  -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
   cursor: pointer;
-  display: -webkit-box;
   display: flex;
           flex-direction: row;
   flex-wrap: nowrap;
@@ -15,7 +12,6 @@
   margin: 0 10px 0 10px;
   padding: 5px;
   text-align: center;
-  -webkit-transition: all 500ms ease-in-out;
   transition: all 500ms ease-in-out;
   -webkit-user-select: none;
      -moz-user-select: none;

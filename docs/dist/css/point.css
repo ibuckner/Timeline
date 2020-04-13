@@ -6,7 +6,6 @@
   left: 1px;
   position: absolute;
   top: 0;
-  -webkit-transition: all 500ms ease-in-out;
   transition: all 500ms ease-in-out;
   width: 1px;
   z-index: 100;
@@ -14,14 +13,12 @@
 
 .pt.highlight {
   border-width: 2px;
-  -webkit-transform: translate(-4px, -4px);
-          transform: translate(-4px, -4px);
+  transform: translate(-4px, -4px);
 }
 
 .pt:hover {
   border-width: 4px;
-  -webkit-transform: translate(-4px, -4px);
-          transform: translate(-4px, -4px);
+  transform: translate(-4px, -4px);
 }
 
 .pt.filtered {

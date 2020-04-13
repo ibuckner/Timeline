@@ -947,15 +947,15 @@ function linkData(data, sequences) {
         sequences = [];
     }
     data.forEach((seq, n) => {
-        var _a, _b;
+        var _a;
         if (!seq.el) {
             let s = new Sequence({ maximumTime: demo.maximumTime });
             s.data(seq);
-            (_a = sequences) === null || _a === void 0 ? void 0 : _a.push(s);
+            sequences === null || sequences === void 0 ? void 0 : sequences.push(s);
         }
         else {
             if (sequences && sequences[n]) {
-                (_b = sequences[n]) === null || _b === void 0 ? void 0 : _b.data(seq);
+                (_a = sequences[n]) === null || _a === void 0 ? void 0 : _a.data(seq);
             }
         }
     });

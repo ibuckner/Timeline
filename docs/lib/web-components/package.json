@@ -1,4 +1,10 @@
 {
+  "_args": [
+    [
+      "@buckneri/web-components@0.2.4",
+      "C:\\Users\\merl\\Desktop\\GH\\NEL\\Timeline"
+    ]
+  ],
   "_from": "@buckneri/web-components@0.2.4",
   "_id": "@buckneri/web-components@0.2.4",
   "_inBundle": false,
@@ -17,17 +23,14 @@
     "fetchSpec": "0.2.4"
   },
   "_requiredBy": [
-    "#USER",
     "/"
   ],
   "_resolved": "https://registry.npmjs.org/@buckneri/web-components/-/web-components-0.2.4.tgz",
-  "_shasum": "80676227f3686bd606363035f9e0c74291cc4b39",
-  "_spec": "@buckneri/web-components@0.2.4",
-  "_where": "C:\\Users\\buckneri\\Documents\\GitHub\\NEL\\Timeline",
+  "_spec": "0.2.4",
+  "_where": "C:\\Users\\merl\\Desktop\\GH\\NEL\\Timeline",
   "bugs": {
     "url": "https://github.com/ibuckner/web-components/issues"
   },
-  "bundleDependencies": false,
   "collection": "dist/collection/collection-manifest.json",
   "collection:main": "dist/collection/index.js",
   "dependencies": {
@@ -35,7 +38,6 @@
     "@buckneri/js-lib-slicer": "^0.2.1",
     "resize-observer": "^1.0.0"
   },
-  "deprecated": false,
   "description": "Web components using Stencil",
   "devDependencies": {
     "@stencil/core": "^1.9.0-18",

@@ -10,10 +10,7 @@ h3 {
 .legend {
   background-color: #fff;
   border: 1px solid #aaa;
-  -webkit-box-direction: normal;
-  -webkit-box-orient: vertical;
   -webkit-box-pack: start;
-  display: -webkit-box;
   display: flex;
           flex-direction: column;
   flex-wrap: nowrap;
@@ -22,25 +19,19 @@ h3 {
   position: fixed;
   right: 0;
   top: 50%;
-  -webkit-transform: translate(0%, -50%);
-          transform: translate(0%, -50%);
-  -webkit-transition: all 500ms ease-in-out;
+  transform: translate(0%, -50%);
   transition: all 500ms ease-in-out;
   z-index: 1000;
 }
 
 .legend.hidden {
-  -webkit-transform: translate(100%, -50%);
-          transform: translate(100%, -50%);
+  transform: translate(100%, -50%);
 }
 
 .menu-legend {
           align-items: flex-end;
   -webkit-box-align: end;
-  -webkit-box-direction: normal;
-  -webkit-box-orient: horizontal;
   -webkit-box-pack: justify;
-  display: -webkit-box;
   display: flex;
           flex-direction: row;
   flex-wrap: nowrap;
@@ -63,28 +54,21 @@ h3 {
 }
 
 .slicer {
-  -webkit-box-direction: normal;
   -webkit-box-flex: 1;
-  -webkit-box-orient: vertical;
   -webkit-box-pack: start;
-  display: -webkit-box;
   display: flex;
           flex-direction: column;
           flex-grow: 1;
   flex-wrap: nowrap;
           justify-content: flex-start;
-  -webkit-transition: all 500ms ease-in-out;
   transition: all 500ms ease-in-out;
 }
 
 .slicer-item {
           align-items: center;
   -webkit-box-align: center;
-  -webkit-box-direction: normal;
-  -webkit-box-orient: horizontal;
   -webkit-box-pack: center;
   cursor: pointer;
-  display: -webkit-box;
   display: flex;
           flex-direction: row;
   flex-wrap: nowrap;
@@ -95,7 +79,6 @@ h3 {
   max-width: 120px;
   padding: 3px 1px 3px 1px;
   text-align: center;
-  -webkit-transition: width 500ms ease-in-out;
   transition: width 500ms ease-in-out;
   -webkit-user-select: none;
      -moz-user-select: none;
