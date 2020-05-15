@@ -1,6 +1,6 @@
 import { ascending, deviation, median, quantile } from "d3-array";
 import { TSequence, TCategory, TPoint, TCategoryLabel } from "./typings/timeline";
-import { randomInt, randomTimeInt } from "@buckneri/js-lib-random";
+import { randomInt, randomTimeInt } from "@buckneri/number";
 
 /**
  * For demo use

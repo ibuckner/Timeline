@@ -38,6 +38,10 @@ class Legend extends Control {
     this.slicer = document.createElement("nel-slicer");
     this.slicer.classList.add("slicer");
     this.element.appendChild(this.slicer);
+
+    this.slicer.addEventListener("selected", (e: any) => {
+      this.state(e.detail);
+    });
   }
 
   /**
@@ -55,7 +59,7 @@ class Legend extends Control {
   public draw(items: TCategoryLabel[]): Legend {
     items.forEach((item: TCategoryLabel) => {
       if (document.querySelector(`[data-label="${item.name}"]`) === null) {
-        const el = this._addItem(item.name, item.foreColor, item.backColor);
+        this._addItem(item.name, item.foreColor, item.backColor);
       }
     });
     return this;
@@ -73,25 +77,28 @@ class Legend extends Control {
     return this;
   }
 
-  public state(): Legend {
-   // this.filterOn = this._slicer.selected === 0 ? false : true;
-
-    const filters: string[] = [];
-    /*
-    this._.forEach((state: any, key: any) => {
-      const el = document.querySelector(`[data-label="${key}"]`) as HTMLElement;
-      if (el) {
-        if (state.filtered) {
-          el.classList.add("filtered");
-        } else {
+  public state(data: string[]): Legend {
+    Array.from(document.querySelectorAll(".category"))
+      .forEach((el: any) => {
+        if (data.length === 0) {
           el.classList.remove("filtered");
+        } else {
+          el.classList.add("filtered");
         }
-      }
-      if (state.selected) {
-        filters.push(key);
+        el.classList.remove("selected");
+      });
+
+    if (data.length === 0) {
+      return this;
+    }
+
+    data.forEach((state: any) => {
+      const el = document.querySelector(`[data-category="${state}"]`) as HTMLElement;
+      if (el) {
+        el.classList.remove("filtered");
+        el.classList.add("selected");
       }
     });
-    */
 
     return this;
   }

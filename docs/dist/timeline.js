@@ -155,6 +155,11 @@
     return quantile(values, 0.5, valueof);
   }
 
+  /**
+   * returns an integer contrained to the min and max values given
+   * @param min - minimum integer (inclusive)
+   * @param max - maximum integer (inclusive)
+   */
   function randomInt(min, max) {
       const r = Math.floor(Math.random() * (max - min + 1) + min);
       return r > max
@@ -163,6 +168,12 @@
               ? min
               : r;
   }
+  /**
+   * Returns a random time value as hhmm (represented as an integer)
+   * @param min - minimum time value (inclusive)
+   * @param max - maximum time value (inclusive)
+   * @param round - rounds the minutes to the nearest value specified e.g. half-hour
+   */
   function randomTimeInt(min, max, round) {
       let r = Math.floor(Math.random() * (max - min + 1) + min);
       let hh = Math.floor(r / 100), mm = r % 100;
@@ -184,6 +195,11 @@
               ? min
               : r;
   }
+  /**
+   * Rounds value to the nearest rounding factor
+   * @param value - value to round off
+   * @param round - rounding factor
+   */
   function roundNearest(value, round) {
       round = Math.abs(Math.trunc(round));
       if (round === 0) {
@@ -366,25 +382,26 @@
   }
 
   /*! *****************************************************************************
-  Copyright (c) Microsoft Corporation. All rights reserved.
-  Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-  this file except in compliance with the License. You may obtain a copy of the
-  License at http://www.apache.org/licenses/LICENSE-2.0
+  Copyright (c) Microsoft Corporation.
 
-  THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-  KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
-  WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
-  MERCHANTABLITY OR NON-INFRINGEMENT.
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
 
-  See the Apache Version 2.0 License for specific language governing permissions
-  and limitations under the License.
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
   ***************************************************************************** */
 
   function __awaiter(thisArg, _arguments, P, generator) {
+      function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
       return new (P || (P = Promise))(function (resolve, reject) {
           function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
           function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-          function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+          function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
           step((generator = generator.apply(thisArg, _arguments || [])).next());
       });
   }
@@ -479,6 +496,9 @@
           this.slicer = document.createElement("nel-slicer");
           this.slicer.classList.add("slicer");
           this.element.appendChild(this.slicer);
+          this.slicer.addEventListener("selected", (e) => {
+              this.state(e.detail);
+          });
       }
       /**
        * Clear any filtered legend items
@@ -496,7 +516,7 @@
       draw(items) {
           items.forEach((item) => {
               if (document.querySelector(`[data-label="${item.name}"]`) === null) {
-                  const el = this._addItem(item.name, item.foreColor, item.backColor);
+                  this._addItem(item.name, item.foreColor, item.backColor);
               }
           });
           return this;
@@ -511,22 +531,27 @@
           window.dispatchEvent(new CustomEvent("legend-visible"));
           return this;
       }
-      state() {
-          /*
-          this._.forEach((state: any, key: any) => {
-            const el = document.querySelector(`[data-label="${key}"]`) as HTMLElement;
-            if (el) {
-              if (state.filtered) {
-                el.classList.add("filtered");
-              } else {
-                el.classList.remove("filtered");
+      state(data) {
+          Array.from(document.querySelectorAll(".category"))
+              .forEach((el) => {
+              if (data.length === 0) {
+                  el.classList.remove("filtered");
               }
-            }
-            if (state.selected) {
-              filters.push(key);
-            }
+              else {
+                  el.classList.add("filtered");
+              }
+              el.classList.remove("selected");
           });
-          */
+          if (data.length === 0) {
+              return this;
+          }
+          data.forEach((state) => {
+              const el = document.querySelector(`[data-category="${state}"]`);
+              if (el) {
+                  el.classList.remove("filtered");
+                  el.classList.add("selected");
+              }
+          });
           return this;
       }
       toggle() {
