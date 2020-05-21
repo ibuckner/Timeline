@@ -153,6 +153,10 @@ function median(values, valueof) {
 }
 
 /**
+ * Returns a circle's area given by radius
+ * @param r - radius of circle
+ */
+/**
  * returns an integer contrained to the min and max values given
  * @param min - minimum integer (inclusive)
  * @param max - maximum integer (inclusive)
