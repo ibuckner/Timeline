@@ -157,11 +157,11 @@ export class DemoData {
         c.points.sort((a, b) => ascending(a.wait, b.wait));
         c.stat = {};
         if (c.stat) {
-          c.stat.median = median(c.points, d => d.wait);
-          c.stat.q25 = quantile(c.points, 0.25, d => d.wait);
-          c.stat.q50 = quantile(c.points, 0.5, d => d.wait);
-          c.stat.q75 = quantile(c.points, 0.75, d => d.wait);
-          c.stat.std = deviation(c.points, d => d.wait);
+          c.stat.median = median(c.points, (d: any) => d.wait);
+          c.stat.q25 = quantile(c.points, 0.25, (d: any) => d.wait);
+          c.stat.q50 = quantile(c.points, 0.5, (d: any) => d.wait);
+          c.stat.q75 = quantile(c.points, 0.75, (d: any) => d.wait);
+          c.stat.std = deviation(c.points, (d: any) => d.wait);
         }
   
         c.points.forEach(pt => {        
