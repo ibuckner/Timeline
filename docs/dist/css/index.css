@@ -18,7 +18,7 @@ html {
 .container {
   background-color: #fff;
   display: flex;
-          flex-direction: column;
+  flex-direction: column;
   flex-wrap: nowrap;
   height: 99%;
   left: 0.5%;
@@ -29,24 +29,20 @@ html {
 }
 
 .panel {
-          align-items: center;
-  -webkit-box-align: center;
-  -webkit-box-flex: 0.25;
-  -webkit-box-pack: end;
+  align-items: center;
   display: flex;
-          flex-direction: row;
-          flex-grow: 0.25;
+  flex-direction: row;
+  flex-grow: 0.25;
   flex-wrap: nowrap;
-          justify-content: flex-end;
+  justify-content: flex-end;
 }
 
 .timeline {
-  -webkit-box-flex: 8;
-  -webkit-box-pack: space-evenly;
   display: flex;
-          flex-direction: column;
-          flex-grow: 8;
+  flex-direction: column;
+  flex-grow: 8;
   flex-wrap: nowrap;
-          justify-content: space-evenly;
+  justify-content: space-evenly;
 }
+
 /*# sourceMappingURL=index.css.map */
